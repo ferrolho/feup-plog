@@ -13,12 +13,12 @@ eximo:-
 %==============%
 mainMenu:-
 	printMainMenu,
-	read(Input),
+	getChar(Input),
 	(
-		Input = 1 -> playGame, mainMenu;
-		Input = 2 -> helpMenu, mainMenu;
-		Input = 3 -> aboutMenu, mainMenu;
-		Input = 4;
+		Input = '1' -> playGame, mainMenu;
+		Input = '2' -> helpMenu, mainMenu;
+		Input = '3' -> aboutMenu, mainMenu;
+		Input = '4';
 
 		nl,
 		write('Error: invalid input.'), nl,
@@ -135,7 +135,7 @@ aboutMenu:-
 
 typeToContinue:-
 	write('Type anything to continue:'), nl,
-	read(_).
+	getChar(_).
 
 clearConsole:-
 	clearConsole(40).
@@ -144,6 +144,10 @@ clearConsole(N):-
 	nl,
 	N1 is N-1,
 	clearConsole(N1).
+
+getChar(Input):-
+	get_char(Input),
+	get_char(_).
 
 %===========%
 %= bla bla =%
