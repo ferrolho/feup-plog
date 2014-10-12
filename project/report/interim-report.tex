@@ -122,7 +122,7 @@ Eximo é um jogo da família das Damas, concebido em 1 de Fevereiro de 2013.\new
 \large{\textbf{Detalhes do Jogo}}
 \begin{small}
 
-O jogo realiza-se num tabuleiro 8x8, em que as casas têm cores alternadas entre castanho claro e escuro. Cada jogador começa com 16 peças colocadas em locais pré-definidos no respectivo lado do tabuleiro. Como mostra a imagem abaixo.\newline
+O jogo realiza-se num tabuleiro 8x8, em que as casas têm todas cores semelhantes. Cada jogador começa com 16 peças colocadas em locais pré-definidos no respectivo lado do tabuleiro. Como mostra a imagem abaixo.\newline
 
 \begin{figure}[h!]
   \begin{minipage}[h!]{0.2\textwidth}
@@ -189,6 +189,7 @@ Quando existe \textbf{mais de uma maneira} (peça) de \textbf{saltar}, o jogador
     \caption{Movimento em Salto}
     \label{fig:6}
   \end{minipage}
+  \caption{Movimentos}
 \end{figure}
 
 \large{\textbf{Captura}}
@@ -200,6 +201,13 @@ Um \textbf{jogador pode capturar} em cinco direções: \textbf{frente}, \textbf{
 \item \textbf{Captura}:
 um jogador \textbf{salta sobre uma peça adjacente do adversário}, se o \textbf{próximo quadrado} (à peça inimiga), na mesma direção, \textbf{estiver vazio}, colocando, assim, a peça sobre o quadrado vazio. A \textbf{peça do oponente é removida do tabuleiro}. Se a \textbf{peça} do mesmo jogador \textbf{poder continuar a capturar outras peças do adversário} então \textbf{deve fazê-lo}. A \textbf{captura é obrigatória}, e deve continuar enquanto for possível.
 \end{itemize}
+
+\begin{figure}[h!]
+	\centering
+    \includegraphics[height=5cm,width=5cm]{res/captureMove.png}
+    \caption{Captura}
+    \label{fig:6}
+\end{figure}
 
 Tal como no \textbf{Movimento de Salto}, \textbf{o jogador escolhe} livremente \textbf{qual sequência de salto a tomar}.
 \end{small}\newline
