@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2014.10.11)  12 OCT 2014 03:09
+This is pdfTeX, Version 3.1415926-2.5-1.40.14 (TeX Live 2013/Debian) (format=pdflatex 2014.10.11)  12 OCT 2014 03:13
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -376,8 +376,7 @@ Package: float 2001/11/08 v1.3d Float enhancements (AL)
 \float@box=\box29
 \@float@everytoks=\toks22
 \@floatcapt=\box30
-)
-No file interim-report.aux.
+) (./interim-report.aux)
 \openout1 = `interim-report.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 15.
@@ -392,7 +391,7 @@ LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 15.
 LaTeX Font Info:    ... okay on input line 15.
 LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 15.
 LaTeX Font Info:    ... okay on input line 15.
-(/usr/share/texlive/texmf-dist/tex/context/base/supp-pdf.mkii
+ (/usr/share/texlive/texmf-dist/tex/context/base/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count102
 \scratchdimen=\dimen119
@@ -570,25 +569,21 @@ Underfull \hbox (badness 10000) in paragraph at lines 210--212
  []
 
 [3 <./res/normalMove.png (PNG copy)> <./res/jumpMove.png (PNG copy)>] [4]
-(./interim-report.aux)
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
- ) 
+(./interim-report.aux) ) 
 Here is how much of TeX's memory you used:
- 4801 strings out of 494963
- 71521 string characters out of 6179646
- 133492 words of memory out of 5000000
+ 4803 strings out of 494963
+ 71559 string characters out of 6179646
+ 133532 words of memory out of 5000000
  7959 multiletter control sequences out of 15000+600000
  9055 words of font info for 32 fonts, out of 8000000 for 9000
  38 hyphenation exceptions out of 8191
  38i,7n,38p,514b,403s stack positions out of 5000i,500n,10000p,200000b,80000s
-</usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></us
-r/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/share
-/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texliv
-e/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texlive/texmf
--dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share/texlive/texmf-dist/fo
-nts/type1/public/amsfonts/cm/cmsy9.pfb>
+</usr/share/texlive/texmf-dist/fonts/type1/public/amsfo
+nts/cm/cmbx12.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm
+/cmbx9.pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.
+pfb></usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></u
+sr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/share
+/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy9.pfb>
 Output written on interim-report.pdf (4 pages, 632725 bytes).
 PDF statistics:
  49 PDF objects out of 1000 (max. 8388607)
