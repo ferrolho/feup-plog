@@ -1,14 +1,16 @@
 \documentclass[a4paper]{article}
 
-%use the english line for english reports
-%\usepackage[english]{babel}
 \usepackage[portuguese]{babel}
-%\usepackage{babel}
 \usepackage[utf8]{inputenc}
 \usepackage{indentfirst}
 \usepackage{graphicx}
 \usepackage{verbatim}
-
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{wrapfig}
+\usepackage{ragged2e}
+\usepackage{listings}
+\usepackage{float}
 
 \begin{document}
 
@@ -18,7 +20,7 @@
 \title{\Huge\textbf{Eximo}\linebreak\linebreak\linebreak
 \Large\textbf{Relatório Intercalar}\linebreak\linebreak
 \linebreak\linebreak
-\includegraphics[scale=0.1]{feup-logo.png}\linebreak\linebreak
+\includegraphics[scale=0.1]{res/feup-logo.png}\linebreak\linebreak
 \linebreak\linebreak
 \Large{Mestrado Integrado em Engenharia Informática e Computação} \linebreak\linebreak
 \Large{Programação em Lógica}\linebreak
@@ -44,14 +46,42 @@ João Filipe Figueiredo Pereira - 201104203 \\
 %%Exemplo de código para inserção de figuras
 %%\begin{figure}[h!]
 %%\begin{center}
-%%escolher entre uma das seguintes três linhas:
-%%\includegraphics[height=20cm,width=15cm]{path relativo da imagem}
-%%\includegraphics[scale=0.5]{path relativo da imagem}
-%%\includegraphics[scale=•]{•} relativo da imagem}
-%%\caption{legenda da figura}
-%%\label{fig:codigoFigura}
+%%\includegraphics[height=1.5cm,width=1.5cm]{white_piece.png}
+%%\caption{Peça Branca - Jogador 1}
+%%\label{fig:1}
 %%\end{center}
 %%\end{figure}
+%%\includegraphics[scale=0.5]{path relativo da imagem}
+%%\includegraphics[scale=•]{•} relativo da imagem}
+
+%%\begin{figure}[h!]
+%%\centering
+%%\includegraphics[height=1.5cm,width=1.5cm]{white_piece.png}
+%%\caption{Peça Branca}
+%%\label{fig:whitePiece}
+%%\end{figure}
+
+%%\hfill
+
+%%\begin{figure}[h!]
+%%\centering
+%%\includegraphics[height=1.5cm,width=1.5cm]{black_piece.png}
+%%\caption{Peça Preta}
+%%\label{fig:blackPiece}
+%%\end{figure}
+
+%%\hfill
+
+%%\begin{figure}[h!]
+%%\centering
+%%\includegraphics[height=3cm,width=3cm]{board.png}
+%%\caption{Tabuleiro}
+%%\label{fig:board}
+%%\end{figure}
+
+
+
+
 %
 %
 %\textit{Para escrever em itálico}
@@ -75,14 +105,110 @@ João Filipe Figueiredo Pereira - 201104203 \\
 %
 %\begin{quote}``Isto é uma citação''\end{quote}
 
+\newpage
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{O Jogo XXX}
+\section{O Jogo Eximo}
+%%Descrever detalhadamente o jogo, a sua história e, principalmente, as suas regras.
+%%Devem ser incluidas imagens apropriadas para explicar o funcionamento do jogo.
+%%Devem ser incluidas as fontes de informação (e.g. URLs em rodapé).
 
-Descrever detalhadamente o jogo, a sua história e, principalmente, as suas regras.
-Devem ser incluidas imagens apropriadas para explicar o funcionamento do jogo.
-Devem ser incluidas as fontes de informação (e.g. URLs em rodapé).
+\large{\textbf{História}}
+\begin{small}
 
+Eximo é um jogo da família das Damas, concebido em 1 de Fevereiro de 2013.\newline
+\end{small}
+
+\large{\textbf{Detalhes do Jogo}}
+\begin{small}
+
+O jogo realiza-se num tabuleiro 8x8, em que as casas têm cores alternadas entre castanho claro e escuro. Cada jogador começa com 16 peças colocadas em locais pré-definidos no respectivo lado do tabuleiro. Como mostra a imagem abaixo.\newline
+
+\begin{figure}[h!]
+  \begin{minipage}[h!]{0.2\textwidth}
+    \includegraphics[width=0.4\textwidth]{res/white_piece.png}
+    \centering
+    \caption{Peça branca}
+    \label{fig:2}
+  \end{minipage}
+	\quad\quad\quad
+  \begin{minipage}[h!]{0.2\textwidth}
+    \includegraphics[width=\textwidth]{res/board.png}
+    \caption{Tabuleiro}
+    \label{fig:3}
+  \end{minipage}
+	\quad\quad\quad
+  \begin{minipage}[h!]{0.2\textwidth}
+    \includegraphics[width=0.4\textwidth]{res/black_piece.png}
+	\centering
+    \caption{Peça preta}
+    \label{fig:4}
+  \end{minipage}
+\end{figure}
+
+Existe movimento e captura ortogonal e diagonal. Diferente das Damas, não há Dama, apenas homens. Os homens podem saltar sem efectuar captura. Quando um homem atinge a última linha, dá-se a libertação de outro homem.
+\end{small}\newline
+
+\large{\textbf{Objetivo}}
+\begin{small}
+
+O objetivo do jogo é, assim como nas Damas, \textbf{capturar todas as peças} do oponente, saltando sobre elas, ou \textbf{incapacitar o adversário} de realizar mais algum movimento.
+\end{small}\newline
+
+\large{\textbf{Jogada}}
+\begin{small}
+
+Em cada jogada, um jogador pode fazer uma de duas ações: \textbf{mover ou capturar}.
+\end{small}\newline
+
+\large{\textbf{Movimento}}
+\begin{small}
+
+Uma peça pode mover-se em três direções: para frente ou na diagonal (\textbf{norte, nordeste ou noroeste}). Numa jogada, o movimento nunca pode ser efetuado para a retaguarda. 
+
+Existem dois tipos de movimentos: \textbf{Normal e Salto}. 
+\begin{itemize}
+\item \textbf{Movimento Normal}:
+uma peça move-se para um \textbf{quadrado adjacente e vazio}. 
+\item \textbf{Movimento em Salto}:
+\textbf{uma peça salta sobre uma peça aliada adjacente, se e só se o quadrado correspondente} (ao lado da peça aliada) \textbf{estiver vazio}, colocando assim a peça nesse quadrado. Se a mesma peça do jogador puder continuar a realizar o mesmo movimento de salto sobre outra peça amigavél então pode fazê-lo. \textbf{Durante o movimento de salto a peça não pode capturar peças inimigas}.
+
+Quando existe \textbf{mais de uma maneira} (peça) de \textbf{saltar}, o jogador \textbf{pode escolher qual a peça para executar o salto}, qual o tipo de salto ou sequência de saltos a fazer. A sequência de saltos escolhida pelo jogador não implica a que requere o número máximos de saltos a fazer, porém \textbf{o jogador após escolher uma sequência deve executar todos os saltos nela contida}.
+\end{itemize}
+\end{small}\pagebreak
+
+\begin{figure}
+  \begin{minipage}[b]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{res/normalMove.png}
+    \caption{Movimento Normal}
+    \label{fig:5}
+  \end{minipage}
+\quad\quad\quad\quad\quad\quad\quad\quad
+  \begin{minipage}[b]{0.3\textwidth}
+    \includegraphics[width=\textwidth]{res/jumpMove.png}
+    \caption{Movimento em Salto}
+    \label{fig:6}
+  \end{minipage}
+\end{figure}
+
+\large{\textbf{Captura}}
+\begin{small}
+
+Um \textbf{jogador pode capturar} em cinco direções: \textbf{frente}, \textbf{diagonal} (direira ou esquerda), à \textbf{direita} ou à \textbf{esquerda} (norte, nordeste, noroeste, leste ou oeste). 
+
+\begin{itemize}
+\item \textbf{Captura}:
+um jogador \textbf{salta sobre uma peça adjacente do adversário}, se o \textbf{próximo quadrado} (à peça inimiga), na mesma direção, \textbf{estiver vazio}, colocando, assim, a peça sobre o quadrado vazio. A \textbf{peça do oponente é removida do tabuleiro}. Se a \textbf{peça} do mesmo jogador \textbf{poder continuar a capturar outras peças do adversário} então \textbf{deve fazê-lo}. A \textbf{captura é obrigatória}, e deve continuar enquanto for possível.
+\end{itemize}
+
+Tal como no \textbf{Movimento de Salto}, \textbf{o jogador escolhe} livremente \textbf{qual sequência de salto a tomar}.
+\end{small}\newline
+
+\large{\textbf{Última Linha}}
+\begin{small}
+
+Quando uma peça atinge a outra extremidade do tabuleiro, ela, de imediato, é removida do tabuleiro e o jogador recebe dois movimentos extra- TODO Acabar isto, informar sobre as regras
+\end{small}\newline
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Representação do Estado do Jogo}
