@@ -42,8 +42,8 @@ printMainMenu:-
 
 playGame:-
 	clearConsole,
-	createMatrixSizeN(8, T),
-	printBoard(T),
+	initialBoard(Board),
+	printBoard(Board),
 	typeToContinue, nl.
 
 helpMenu:-
@@ -149,14 +149,15 @@ getChar(Input):-
 	get_char(Input),
 	get_char(_).
 
-%===========%
-%= bla bla =%
-%===========%
-piece(white, 'O').
-piece(black, '#').
-piece(empty, ' ').
+%======================================%
+%= Board presets and cell translation =%
+%======================================%
+cell(empty, ' ').
+cell(white, 'O').
+cell(black, '#').
+cell(_, '?').
 
-initialaBoard([
+initialBoard([
 	[empty, white, white, white, white, white, white, empty],
 	[empty, white, white, white, white, white, white, empty],
 	[empty, white, white, empty, empty, white, white, empty],
@@ -176,52 +177,6 @@ emptyBoard([
 	[empty, empty, empty, empty, empty, empty, empty, empty],
 	[empty, empty, empty, empty, empty, empty, empty, empty]]).
 
-%=====================================%
-%= Regular list and matrix functions =%
-%=====================================%
-printList([]).
-printList([Head | Tail]):-
-	write(Head),
-	printList(Tail).
-
-printMatrix([]).
-printMatrix([Line | Tail]):-
-	printList(Line), nl,
-	printMatrix(Tail).
-
-%=================%
-%= Board drawing =%
-%=================%
-createSeparatorN(0, _, []).
-createSeparatorN(N, SS, [SS | Ls]):-
-	N1 is N-1,
-	createSeparatorN(N1, SS, Ls).
-
-printBoardRowValues([]).
-printBoardRowValues([Head | Tail]):-
-	write('  '), write(Head), write('  |'),
-	printBoardRowValues(Tail).
-
-printBoardRow([]).
-printBoardRow(Line):-
-	length(Line, Length),
-	createSeparatorN(Length, '_____|', Separator),
-	createSeparatorN(Length, '     |', Separator2),
-	write('|'), printList(Separator2), nl,
-	write('|'), printBoardRowValues(Line), nl,
-	write('|'), printList(Separator), nl.
-
-printRemainingBoard([]).
-printRemainingBoard([Line | Tail]):-
-	printBoardRow(Line),
-	printRemainingBoard(Tail).
-
-printBoard([Line | Tail]):-
-	length(Line, Length),
-	createSeparatorN(Length, '_____|', Separator),
-	write('|'), printList(Separator), nl,
-	printRemainingBoard([Line | Tail]).
-
 %===============================%
 %= Lists and matrices creation =%
 %===============================%
@@ -238,3 +193,58 @@ createMatrixSizeN(N, I, [Line | RT]):-
 	createListSizeN(N, Line),
 	I1 is I-1,
 	createMatrixSizeN(N, I1, RT).
+
+%=====================================%
+%= Regular list and matrix functions =%
+%=====================================%
+printList([]).
+printList([Head | Tail]):-
+	write(Head),
+	printList(Tail).
+
+printMatrix([]).
+printMatrix([Line | Tail]):-
+	printList(Line), nl,
+	printMatrix(Tail).
+
+%=================%
+%= Board drawing =%
+%=================%
+printColumnIdentifiers:-
+	write('        a     b     c     d     e     f     g     h').
+
+rowIdentifiersList(['  1  ', '  2  ', '  3  ', '  4  ', '  5  ', '  6  ', '  7  ', '  8  ']).
+
+printInitialSeparator:-
+	write('      _______________________________________________').
+
+createSeparatorN(0, _, []).
+createSeparatorN(N, SS, [SS | Ls]):-
+	N1 is N-1,
+	createSeparatorN(N1, SS, Ls).
+
+printBoardRowValues([]).
+printBoardRowValues([Head | Tail]):-
+	cell(Head, Piece),
+	write('  '), write(Piece), write('  |'),
+	printBoardRowValues(Tail).
+
+printBoardRow([], []).
+printBoardRow(Line, RowIdentifiersListHead):-
+	length(Line, Length),
+	createSeparatorN(Length, '_____|', Separator),
+	createSeparatorN(Length, '     |', Separator2),
+	write('     '), write('|'), printList(Separator2), nl,
+	write(RowIdentifiersListHead), write('|'), printBoardRowValues(Line), nl,
+	write('     '), write('|'), printList(Separator), nl.
+
+printRemainingBoard([], []).
+printRemainingBoard([Line | Tail], [RowIdentifiersListHead | RowIdentifiersListTail]):-
+	printBoardRow(Line, RowIdentifiersListHead),
+	printRemainingBoard(Tail, RowIdentifiersListTail).
+
+printBoard([Line | Tail]):-
+	printColumnIdentifiers, nl,
+	printInitialSeparator, nl,
+	rowIdentifiersList(RowIdentifiers),
+	printRemainingBoard([Line | Tail], RowIdentifiers), nl.
