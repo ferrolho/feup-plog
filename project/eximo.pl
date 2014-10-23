@@ -22,7 +22,7 @@ mainMenu:-
 
 		nl,
 		write('Error: invalid input.'), nl,
-		typeToContinue, nl,
+		pressEnterToContinue, nl,
 		eximo
 	).
 
@@ -44,7 +44,7 @@ playGame:-
 	clearConsole,
 	initialBoard(Board),
 	printBoard(Board),
-	typeToContinue, nl.
+	pressEnterToContinue, nl.
 
 helpMenu:-
 	clearConsole,
@@ -67,10 +67,10 @@ helpMenu:-
 	write('=     forward (north, north-east or north-west).                  ='), nl,
 	write('=                                                                 ='), nl,
 	write('=                                                                 ='), nl,
-	write('=                                                   Page 1 of 3   ='), nl,
+	write('=                                                   Page 1 of 5   ='), nl,
 	write('=                                                                 ='), nl,
 	write('==================================================================='), nl,
-	typeToContinue, nl,
+	pressEnterToContinue, nl,
 	clearConsole,
 	write('==================================================================='), nl,
 	write('=                      ..:: How to play ::..                      ='), nl,
@@ -91,10 +91,10 @@ helpMenu:-
 	write('=     cannot capture.                                             ='), nl,
 	write('=                                                                 ='), nl,
 	write('=                                                                 ='), nl,
-	write('=                                                   Page 2 of 3   ='), nl,
+	write('=                                                   Page 2 of 5   ='), nl,
 	write('=                                                                 ='), nl,
 	write('==================================================================='), nl,
-	typeToContinue, nl,
+	pressEnterToContinue, nl,
 	clearConsole,
 	write('==================================================================='), nl,
 	write('=                      ..:: How to play ::..                      ='), nl,
@@ -102,23 +102,71 @@ helpMenu:-
 	write('=                                                                 ='), nl,
 	write('=   When there is more than one way to jump, the player may       ='), nl,
 	write('=   choose which piece to jump with, and which jumping option     ='), nl,
+	write('=   or sequence of jumps to make. The jumping sequence chosen     ='), nl,
+	write('=   is not required to be the one which maximizes the number of   ='), nl,
+	write('=   jumps; however, a player must make all available jumps in     ='), nl,
+	write('=   the sequence chosen.                                          ='), nl,
+	write('=                                                                 ='), nl,
+	write('=   Capture:                                                      ='), nl,
+	write('=     A checker can capture in 5 directions: forward,             ='), nl,
+	write('=     diagonally forward, right or left (north, north-east,       ='), nl,
+	write('=     north-west, east or west).                                  ='), nl,
 	write('=                                                                 ='), nl,
 	write('=                                                                 ='), nl,
 	write('=                                                                 ='), nl,
 	write('=                                                                 ='), nl,
-	write('=                                                                 ='), nl,
-	write('=                                                                 ='), nl,
-	write('=                                                                 ='), nl,
-	write('=                                                                 ='), nl,
-	write('=                                                                 ='), nl,
-	write('=                                                                 ='), nl,
-	write('=                                                                 ='), nl,
-	write('=                                                                 ='), nl,
-	write('=                                                                 ='), nl,
-	write('=                                                   Page 3 of 3   ='), nl,
+	write('=                                                   Page 3 of 5   ='), nl,
 	write('=                                                                 ='), nl,
 	write('==================================================================='), nl,
-	typeToContinue, nl.
+	pressEnterToContinue, nl,
+	clearConsole,
+	write('==================================================================='), nl,
+	write('=                      ..:: How to play ::..                      ='), nl,
+	write('==================================================================='), nl,
+	write('=                                                                 ='), nl,
+	write('=   A checker jumps over a (forward, diagonally forward, right    ='), nl,
+	write('=   or left) adjacent opponent\'s piece if the next square in      ='), nl,
+	write('=   the same direction is empty, placing the jumping checker on   ='), nl,
+	write('=   the next empty square. The opponent\'s piece is removed from   ='), nl,
+	write('=   the board immediately. If the same player\'s checker can       ='), nl,
+	write('=   continue capturing by jumping another opponent\'s piece then   ='), nl,
+	write('=   it must do so. Capturing is mandatory, and you must keep      ='), nl,
+	write('=   capturing as long as it is possible.                          ='), nl,
+	write('=                                                                 ='), nl,
+	write('=   As in the jumping move, the player chooses freely which       ='), nl,
+	write('=   jumping sequence to take.                                     ='), nl,
+	write('=                                                                 ='), nl,
+	write('=                                                                 ='), nl,
+	write('=                                                                 ='), nl,
+	write('=                                                                 ='), nl,
+	write('=                                                   Page 4 of 5   ='), nl,
+	write('=                                                                 ='), nl,
+	write('==================================================================='), nl,
+	pressEnterToContinue, nl,
+	clearConsole,
+	write('==================================================================='), nl,
+	write('=                      ..:: How to play ::..                      ='), nl,
+	write('==================================================================='), nl,
+	write('=                                                                 ='), nl,
+	write('=   On the last row:                                              ='), nl,
+	write('=   When a checker reaches the other end of the board, it is      ='), nl,
+	write('=   removed from the board immediately and the player gets two    ='), nl,
+	write('=   extra-moves to make instantly: dropping two new checkers in   ='), nl,
+	write('=   any empty square in his own first two rows, except in the     ='), nl,
+	write('=   four squares on the sides.                                    ='), nl,
+	write('=   The drop zone for Black: b1, c1, d1, e1, f1, g1, b2, c2,      ='), nl,
+	write('=   d2, e2, f2, g2; for White: b8, c8, d8, e8, f8, g8, b7, c7,    ='), nl,
+	write('=   d7, e7, f7, g7).                                              ='), nl,
+	write('=                                                                 ='), nl,
+	write('=   If a checker reaches the other end of the board and there     ='), nl,
+	write('=   isn\'t any empty square in the drop zone, the player loses     ='), nl,
+	write('=   that piece. If there is just one empty square in the drop     ='), nl,
+	write('=   zone, the player gets only one drop.                          ='), nl,
+	write('=                                                                 ='), nl,
+	write('=                                                   Page 5 of 5   ='), nl,
+	write('=                                                                 ='), nl,
+	write('==================================================================='), nl,
+	pressEnterToContinue, nl.
 
 aboutMenu:-
 	clearConsole,
@@ -131,11 +179,11 @@ aboutMenu:-
 	write('=    > Joao Pereira         ='), nl,
 	write('=                           ='), nl,
 	write('============================='), nl,
-	typeToContinue, nl.
+	pressEnterToContinue, nl.
 
-typeToContinue:-
-	write('Type anything to continue:'), nl,
-	getChar(_).
+pressEnterToContinue:-
+	write('Press <Enter> to continue:'), nl,
+	waitForEnter.
 
 clearConsole:-
 	clearConsole(40).
@@ -145,6 +193,8 @@ clearConsole(N):-
 	N1 is N-1,
 	clearConsole(N1).
 
+waitForEnter:-
+	get_char(_).
 getChar(Input):-
 	get_char(Input),
 	get_char(_).
