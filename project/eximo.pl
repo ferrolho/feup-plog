@@ -1,16 +1,22 @@
-%===========================%
-%=     ..:: EXIMO ::..     =%
-%===========================%
-%= Authors:                =%
-%=  > Henrique Ferrolho    =%
-%=  > Joao Pereira         =%
-%===========================%
+%=======================================%
+%=           ..:: EXIMO ::..           =%
+%=                                     =%
+%=   Type 'eximo.' to start the game   =%
+%=                                     =%
+%=======================================%
+%=                                     =%
+%=          ..:: Authors ::..          =%
+%=                                     =%
+%=  Henrique Ferrolho && Joao Pereira  =%
+%=             FEUP - 2014             =%
+%=                                     =%
+%=======================================%
 eximo:-
 	mainMenu.
 
-%==============%
-%= Game menus =%
-%==============%
+%=================%
+%= @@ game menus =%
+%=================%
 mainMenu:-
 	printMainMenu,
 	getChar(Input),
@@ -71,6 +77,7 @@ helpMenu:-
 	write('=                                                                 ='), nl,
 	write('==================================================================='), nl,
 	pressEnterToContinue, nl,
+
 	clearConsole,
 	write('==================================================================='), nl,
 	write('=                      ..:: How to play ::..                      ='), nl,
@@ -95,6 +102,7 @@ helpMenu:-
 	write('=                                                                 ='), nl,
 	write('==================================================================='), nl,
 	pressEnterToContinue, nl,
+
 	clearConsole,
 	write('==================================================================='), nl,
 	write('=                      ..:: How to play ::..                      ='), nl,
@@ -119,6 +127,7 @@ helpMenu:-
 	write('=                                                                 ='), nl,
 	write('==================================================================='), nl,
 	pressEnterToContinue, nl,
+
 	clearConsole,
 	write('==================================================================='), nl,
 	write('=                      ..:: How to play ::..                      ='), nl,
@@ -143,6 +152,7 @@ helpMenu:-
 	write('=                                                                 ='), nl,
 	write('==================================================================='), nl,
 	pressEnterToContinue, nl,
+
 	clearConsole,
 	write('==================================================================='), nl,
 	write('=                      ..:: How to play ::..                      ='), nl,
@@ -181,31 +191,26 @@ aboutMenu:-
 	write('============================='), nl,
 	pressEnterToContinue, nl.
 
-pressEnterToContinue:-
-	write('Press <Enter> to continue:'), nl,
-	waitForEnter.
-
-clearConsole:-
-	clearConsole(40).
-clearConsole(0).
-clearConsole(N):-
-	nl,
-	N1 is N-1,
-	clearConsole(N1).
-
-waitForEnter:-
-	get_char(_).
-getChar(Input):-
-	get_char(Input),
-	get_char(_).
-
-%======================================%
-%= Board presets and cell translation =%
-%======================================%
+%=======================%
+%= @@ cell translation =%
+%=======================%
 cell(empty, ' ').
 cell(white, 'O').
 cell(black, '#').
 cell(_, '?').
+
+%====================%
+%= @@ board presets =%
+%====================%
+emptyBoard([
+	[empty, empty, empty, empty, empty, empty, empty, empty],
+	[empty, empty, empty, empty, empty, empty, empty, empty],
+	[empty, empty, empty, empty, empty, empty, empty, empty],
+	[empty, empty, empty, empty, empty, empty, empty, empty],
+	[empty, empty, empty, empty, empty, empty, empty, empty],
+	[empty, empty, empty, empty, empty, empty, empty, empty],
+	[empty, empty, empty, empty, empty, empty, empty, empty],
+	[empty, empty, empty, empty, empty, empty, empty, empty]]).
 
 initialBoard([
 	[empty, white, white, white, white, white, white, empty],
@@ -217,56 +222,36 @@ initialBoard([
 	[empty, black, black, black, black, black, black, empty],
 	[empty, black, black, black, black, black, black, empty]]).
 
-emptyBoard([
-	[empty, empty, empty, empty, empty, empty, empty, empty],
-	[empty, empty, empty, empty, empty, empty, empty, empty],
-	[empty, empty, empty, empty, empty, empty, empty, empty],
-	[empty, empty, empty, empty, empty, empty, empty, empty],
-	[empty, empty, empty, empty, empty, empty, empty, empty],
-	[empty, empty, empty, empty, empty, empty, empty, empty],
-	[empty, empty, empty, empty, empty, empty, empty, empty],
-	[empty, empty, empty, empty, empty, empty, empty, empty]]).
+%==============================%
+%= @@ board drawing functions =%
+%==============================%
+printBoard([Line | Tail]):-
+	printColumnIdentifiers, nl,
+	printInitialSeparator, nl,
+	rowIdentifiersList(RowIdentifiers),
+	printRemainingBoard([Line | Tail], RowIdentifiers), nl.
 
-%===============================%
-%= Lists and matrices creation =%
-%===============================%
-createListSizeN(0, []).
-createListSizeN(N, ['0' | Ls]):-
-	N1 is N-1,
-	createListSizeN(N1, Ls).
-
-createMatrixSizeN(0, [[]]).
-createMatrixSizeN(N, M):-
-	createMatrixSizeN(N, N, M).
-createMatrixSizeN(_, 0, []).
-createMatrixSizeN(N, I, [Line | RT]):-
-	createListSizeN(N, Line),
-	I1 is I-1,
-	createMatrixSizeN(N, I1, RT).
-
-%=====================================%
-%= Regular list and matrix functions =%
-%=====================================%
-printList([]).
-printList([Head | Tail]):-
-	write(Head),
-	printList(Tail).
-
-printMatrix([]).
-printMatrix([Line | Tail]):-
-	printList(Line), nl,
-	printMatrix(Tail).
-
-%=================%
-%= Board drawing =%
-%=================%
 printColumnIdentifiers:-
 	write('        a     b     c     d     e     f     g     h').
 
-rowIdentifiersList(['  1  ', '  2  ', '  3  ', '  4  ', '  5  ', '  6  ', '  7  ', '  8  ']).
-
 printInitialSeparator:-
 	write('      _______________________________________________').
+
+rowIdentifiersList(['  1  ', '  2  ', '  3  ', '  4  ', '  5  ', '  6  ', '  7  ', '  8  ']).
+
+printRemainingBoard([], []).
+printRemainingBoard([Line | Tail], [RowIdentifiersListHead | RowIdentifiersListTail]):-
+	printBoardRow(Line, RowIdentifiersListHead),
+	printRemainingBoard(Tail, RowIdentifiersListTail).
+
+printBoardRow([], []).
+printBoardRow(Line, RowIdentifiersListHead):-
+	length(Line, Length),
+	createSeparatorN(Length, '_____|', Separator),
+	createSeparatorN(Length, '     |', Separator2),
+	write('     '), write('|'), printList(Separator2), nl,
+	write(RowIdentifiersListHead), write('|'), printBoardRowValues(Line), nl,
+	write('     '), write('|'), printList(Separator), nl.
 
 createSeparatorN(0, _, []).
 createSeparatorN(N, SS, [SS | Ls]):-
@@ -279,22 +264,66 @@ printBoardRowValues([Head | Tail]):-
 	write('  '), write(Piece), write('  |'),
 	printBoardRowValues(Tail).
 
-printBoardRow([], []).
-printBoardRow(Line, RowIdentifiersListHead):-
-	length(Line, Length),
-	createSeparatorN(Length, '_____|', Separator),
-	createSeparatorN(Length, '     |', Separator2),
-	write('     '), write('|'), printList(Separator2), nl,
-	write(RowIdentifiersListHead), write('|'), printBoardRowValues(Line), nl,
-	write('     '), write('|'), printList(Separator), nl.
+%======================================%
+%= @@ lists and matrices constructors =%
+%======================================%
+createMatrixSizeN(0, [[]]).
+createMatrixSizeN(N, M):-
+	createMatrixSizeN(N, N, M).
 
-printRemainingBoard([], []).
-printRemainingBoard([Line | Tail], [RowIdentifiersListHead | RowIdentifiersListTail]):-
-	printBoardRow(Line, RowIdentifiersListHead),
-	printRemainingBoard(Tail, RowIdentifiersListTail).
+createMatrixSizeN(_, 0, []).
+createMatrixSizeN(N, I, [Line | RT]):-
+	createListSizeN(N, Line),
+	I1 is I-1,
+	createMatrixSizeN(N, I1, RT).
 
-printBoard([Line | Tail]):-
-	printColumnIdentifiers, nl,
-	printInitialSeparator, nl,
-	rowIdentifiersList(RowIdentifiers),
-	printRemainingBoard([Line | Tail], RowIdentifiers), nl.
+createListSizeN(0, []).
+createListSizeN(N, ['0' | Ls]):-
+	N1 is N-1,
+	createListSizeN(N1, Ls).
+
+%=========================================%
+%= @@ lists and matrices print functions =%
+%=========================================%
+printMatrix([], _).
+printMatrix([Line | Tail], Separator):-
+	printList(Line, Separator), nl,
+	printMatrix(Tail, Separator).
+
+printList([], _).
+printList([Head | Tail], Separator):-
+	write(Head), write(Separator),
+	printList(Tail, Separator).
+
+printMatrix([]).
+printMatrix([Line | Tail]):-
+	printList(Line), nl,
+	printMatrix(Tail).
+
+printList([]).
+printList([Head | Tail]):-
+	write(Head),
+	printList(Tail).
+
+%========================%
+%= @@ console utilities =%
+%========================%
+pressEnterToContinue:-
+	write('Press <Enter> to continue:'), nl,
+	waitForEnter.
+
+waitForEnter:-
+	get_char(_).
+
+clearConsole:-
+	clearConsole(40).
+
+clearConsole(0).
+clearConsole(N):-
+	nl,
+	N1 is N-1,
+	clearConsole(N1).
+
+getChar(Input):-
+	get_char(Input),
+	get_char(_).
