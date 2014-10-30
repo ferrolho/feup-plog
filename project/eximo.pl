@@ -50,6 +50,8 @@ playGame:-
 	clearConsole,
 	initialBoard(Board),
 	printBoard(Board),
+	movePiece(1, 2, 1, 3, Board, FinalBoard),
+	printBoard(FinalBoard),
 	pressEnterToContinue, nl.
 
 helpMenu:-
@@ -221,6 +223,12 @@ initialBoard([
 	[empty, black, black, empty, empty, black, black, empty],
 	[empty, black, black, black, black, black, black, empty],
 	[empty, black, black, black, black, black, black, empty]]).
+
+%===============================%
+%= @@ board modifier functions =%
+%===============================%
+movePiece(SrcCol, SrcRow, DestCol, DestRow, [BoardLine | BoardTail], [FinalBoardLine | FinalBoardTail]):-
+	.
 
 %==============================%
 %= @@ board drawing functions =%
