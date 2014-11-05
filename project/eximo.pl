@@ -21,7 +21,7 @@ mainMenu:-
 	printMainMenu,
 	getChar(Input),
 	(
-		Input = '1' -> playGame, mainMenu;
+		Input = '1' -> startGame, mainMenu;
 		Input = '2' -> helpMenu, mainMenu;
 		Input = '3' -> aboutMenu, mainMenu;
 		Input = '4';
@@ -46,14 +46,9 @@ printMainMenu:-
 	write('==========================='), nl,
 	write('Choose an option:'), nl.
 
-playGame:-
-	clearConsole,
+startGame:-
 	initialBoard(Board),
-	printBoard(Board),
-	movePiece(2, 1, 3, 1, Board, FinalBoard),
-	pressEnterToContinue,
-	printBoard(FinalBoard),
-	pressEnterToContinue, nl.
+	playGame(Board, whitePlayer).
 
 helpMenu:-
 	clearConsole,
@@ -194,53 +189,142 @@ aboutMenu:-
 	write('============================='), nl,
 	pressEnterToContinue, nl.
 
-%=======================%
-%= @@ cell translation =%
-%=======================%
-cell(empty, ' ').
-cell(white, 'O').
-cell(black, '#').
-cell(_, '?').
+%===============================%
+%= @@ player, pieces and cells =%
+%===============================%
+player(whitePlayer).
+player(blackPlayer).
+
+getPlayerName(whitePlayer, 'White').
+getPlayerName(blackPlayer, 'Black').
+
+piece(whitePiece).
+piece(blackPiece).
+
+getCellSymbol(emptyCell, ' ').
+getCellSymbol(whiteCell, 'O').
+getCellSymbol(blackCell, '#').
+getCellSymbol(_, '?').
+
+pieceIsOwnedBy(whiteCell, whitePlayer).
+pieceIsOwnedBy(blackCell, blackPlayer).
 
 %====================%
 %= @@ board presets =%
 %====================%
 emptyBoard([
-	[empty, empty, empty, empty, empty, empty, empty, empty],
-	[empty, empty, empty, empty, empty, empty, empty, empty],
-	[empty, empty, empty, empty, empty, empty, empty, empty],
-	[empty, empty, empty, empty, empty, empty, empty, empty],
-	[empty, empty, empty, empty, empty, empty, empty, empty],
-	[empty, empty, empty, empty, empty, empty, empty, empty],
-	[empty, empty, empty, empty, empty, empty, empty, empty],
-	[empty, empty, empty, empty, empty, empty, empty, empty]]).
+	[emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell],
+	[emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell],
+	[emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell],
+	[emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell],
+	[emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell],
+	[emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell],
+	[emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell],
+	[emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell]]).
 
 initialBoard([
-	[empty, white, white, white, white, white, white, empty],
-	[empty, white, white, white, white, white, white, empty],
-	[empty, white, white, empty, empty, white, white, empty],
-	[empty, empty, empty, empty, empty, empty, empty, empty],
-	[empty, empty, empty, empty, empty, empty, empty, empty],
-	[empty, black, black, empty, empty, black, black, empty],
-	[empty, black, black, black, black, black, black, empty],
-	[empty, black, black, black, black, black, black, empty]]).
+	[emptyCell, whiteCell, whiteCell, whiteCell, whiteCell, whiteCell, whiteCell, emptyCell],
+	[emptyCell, whiteCell, whiteCell, whiteCell, whiteCell, whiteCell, whiteCell, emptyCell],
+	[emptyCell, whiteCell, whiteCell, emptyCell, emptyCell, whiteCell, whiteCell, emptyCell],
+	[emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell],
+	[emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell],
+	[emptyCell, blackCell, blackCell, emptyCell, emptyCell, blackCell, blackCell, emptyCell],
+	[emptyCell, blackCell, blackCell, blackCell, blackCell, blackCell, blackCell, emptyCell],
+	[emptyCell, blackCell, blackCell, blackCell, blackCell, blackCell, blackCell, emptyCell]]).
 
-%===============================%
-%= @@ board modifier functions =%
-%===============================%
+%======================%
+%= @@ main game cycle =%
+%======================%
+playGame(Board, Player):-
+	repeat,
+
+	clearConsole,
+	printBoard(Board),
+	printTurnInfo(Player),
+	getPieceToBeMovedSourceCoords(SrcRow, SrcCol),
+	validateChosenPieceOwnership(SrcRow, SrcCol, Board, Player),
+
+	clearConsole,
+	printBoard(Board),
+	printTurnInfo(Player),
+	getPieceToBeMovedDestinyCoords(DestRow, DestCol),
+	validateDifferentCoordinates(SrcRow, SrcCol, DestRow, DestCol),
+
+	movePiece(SrcRow, SrcCol, DestRow, DestCol, Board, ResultantBoard),
+	changePlayer(Player, NextPlayer), !,
+	playGame(ResultantBoard, NextPlayer).
+
+%%% 1. current player; 2. next player.
+changePlayer(Player, NextPlayer):-
+	(
+		Player = whitePlayer ->
+		NextPlayer = blackPlayer;
+		NextPlayer = whitePlayer
+	).
+
+%===========================%
+%= @@ game input functions =%
+%===========================%
+getPieceToBeMovedSourceCoords(SrcRow, SrcCol):-
+	write('Please insert the coordinates of the piece you wish to move:'), nl,
+	write('Row: [1-8] '), inputBoardRow(SrcRow),
+	write('Column: [a-h] '), inputBoardColumn(SrcCol),
+	nl.
+
+getPieceToBeMovedDestinyCoords(DestRow, DestCol):-
+	write('Please insert the DESTINY coordinates of that piece:'), nl,
+	write('Row: [1-8] '), inputBoardRow(DestRow),
+	write('Column: [a-h] '), inputBoardColumn(DestCol),
+	nl.
+
+validateChosenPieceOwnership(SrcRow, SrcCol, Board, Player):-
+	getMatrixElemAt(SrcRow, SrcCol, Board, Piece),
+	pieceIsOwnedBy(Piece, Player), !.
+validateChosenPieceOwnership(_, _, _, _):-
+	write('INVALID PIECE!'), nl,
+	write('A player can only move his/her own pieces.'), nl,
+	pressEnterToContinue, nl,
+	fail.
+
+validateDifferentCoordinates(SrcRow, SrcCol, DestRow, DestCol):-
+	SrcRow \= DestRow ; SrcCol \= DestCol, !.
+validateDifferentCoordinates(_, _, _, _):-
+	write('INVALID INPUT!'), nl,
+	write('The source and destiny coordinates must be different.'), nl,
+	pressEnterToContinue, nl,
+	fail.
+
+inputBoardRow(Row):-
+	getCode(RawRow),
+	Row is RawRow-1.
+
+inputBoardColumn(Column):-
+	getCode(RawCol),
+	Column is RawCol-49.
+
+%===================================%
+%= @@ board manipulation functions =%
+%===================================%
 movePiece(SrcRow, SrcCol, DestRow, DestCol, CurrentBoard, ResultantBoard):-
 	getMatrixElemAt(SrcRow, SrcCol, CurrentBoard, Elem),
-	setMatrixElemAtWith(SrcRow, SrcCol, empty, CurrentBoard, TempBoard),
+	setMatrixElemAtWith(SrcRow, SrcCol, emptyCell, CurrentBoard, TempBoard),
 	setMatrixElemAtWith(DestRow, DestCol, Elem, TempBoard, ResultantBoard).
 
-%==============================%
-%= @@ board drawing functions =%
-%==============================%
+%===============================%
+%= @@ board printing functions =%
+%===============================%
+%%% prints the name of the player of the current turn
+printTurnInfo(Player):-
+	getPlayerName(Player, PlayerName),
+	write('# It is '), write(PlayerName), write(' player\'s turn to play.'), nl,
+	nl.
+
 printBoard([Line | Tail]):-
 	printColumnIdentifiers, nl,
 	printInitialSeparator, nl,
 	rowIdentifiersList(RowIdentifiers),
-	printRemainingBoard([Line | Tail], RowIdentifiers), nl.
+	printRemainingBoard([Line | Tail], RowIdentifiers),
+	nl, !.
 
 printColumnIdentifiers:-
 	write('        a     b     c     d     e     f     g     h').
@@ -271,7 +355,7 @@ createSeparatorN(N, SS, [SS | Ls]):-
 
 printBoardRowValues([]).
 printBoardRowValues([Head | Tail]):-
-	cell(Head, Piece),
+	getCellSymbol(Head, Piece),
 	write('  '), write(Piece), write('  |'),
 	printBoardRowValues(Tail).
 
@@ -370,14 +454,14 @@ printList([Head | Tail]):-
 %= @@ console utilities =%
 %========================%
 pressEnterToContinue:-
-	write('Press <Enter> to continue:'), nl,
+	write('Press <Enter> to continue.'), nl,
 	waitForEnter.
 
 waitForEnter:-
 	get_char(_).
 
 clearConsole:-
-	clearConsole(40).
+	clearConsole(40), !.
 
 clearConsole(0).
 clearConsole(N):-
@@ -388,3 +472,8 @@ clearConsole(N):-
 getChar(Input):-
 	get_char(Input),
 	get_char(_).
+
+getCode(Input):-
+	get_code(TempInput),
+	get_code(_),
+	Input is TempInput-48.
