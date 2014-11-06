@@ -3,7 +3,7 @@
 %========================%
 pressEnterToContinue:-
 	write('Press <Enter> to continue.'), nl,
-	waitForEnter.
+	waitForEnter, !.
 
 waitForEnter:-
 	get_char(_).
