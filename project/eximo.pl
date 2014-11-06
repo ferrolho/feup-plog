@@ -15,6 +15,7 @@
 %===============%
 %= @@ includes =%
 %===============%
+:- include('containers.pl').
 :- include('gameObj.pl').
 :- include('menus.pl').
 :- include('utilities.pl').
@@ -67,9 +68,8 @@ playGame(Game):-
 	getPieceToBeMovedDestinyCoords(DestRow, DestCol),
 	validateDifferentCoordinates(SrcRow, SrcCol, DestRow, DestCol),
 
-	validateMove(SrcRow, SrcCol, DestRow, DestCol, Board, Player),
+	validateMove(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame),
 
-	movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame),
 	changePlayer(TempGame, ResultantGame), !,
 	playGame(ResultantGame).
 
@@ -146,7 +146,10 @@ validateDifferentCoordinates(_, _, _, _):-
 %===================================%
 %= @@ board manipulation functions =%
 %===================================%
-validateMove(SrcRow, SrcCol, DestRow, DestCol, Board, Player):-
+% ordinary move
+validateMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
+	getGameBoard(Game, Board),
+	getGamePlayerTurn(Game, Player),
 	% check if destiny is a forward or diagonally forward adjacent empty cell
 	DeltaRow is DestRow - SrcRow,
 	DeltaCol is abs(DestCol - SrcCol),
@@ -156,8 +159,13 @@ validateMove(SrcRow, SrcCol, DestRow, DestCol, Board, Player):-
 	),
 	% check if destiny cell is empty
 	getMatrixElemAt(DestRow, DestCol, Board, Cell),
-	Cell == emptyCell, !.
-validateMove(SrcRow, SrcCol, DestRow, DestCol, Board, Player):-
+	Cell == emptyCell,
+	movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame), !.
+
+% jump move
+validateMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
+	getGameBoard(Game, Board),
+	getGamePlayerTurn(Game, Player),
 	% validate vertical movement
 	DeltaRow is DestRow - SrcRow,
 	(
@@ -178,29 +186,83 @@ validateMove(SrcRow, SrcCol, DestRow, DestCol, Board, Player):-
 	(
 		Player = whitePlayer -> MiddleCell == whiteCell;
 		Player = blackPlayer -> MiddleCell == blackCell
-	), !.
+	),
+	movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame), !.
+
+% capture move
+validateMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
+	getGameBoard(Game, Board),
+	getGamePlayerTurn(Game, Player),
+	% validate vertical movement
+	DeltaRow is DestRow - SrcRow,
+	(
+		DeltaRow =:= 0;
+		Player = whitePlayer -> DeltaRow =:= 2;
+		Player = blackPlayer -> DeltaRow =:= -2
+	),
+	% validate horizontal movement
+	DeltaCol is abs(DestCol - SrcCol),
+	(DeltaCol =:= 0; DeltaCol =:= 2),
+	% check if destiny cell is empty
+	getMatrixElemAt(DestRow, DestCol, Board, Cell),
+	Cell == emptyCell,
+	% check if cell between source and destiny is owned by the oponent
+	MiddleCellRow is SrcRow + DeltaRow // 2,
+	MiddleCellCol is SrcCol + (DestCol - SrcCol) // 2,
+	write(MiddleCellRow - MiddleCellCol), nl,
+	getMatrixElemAt(MiddleCellRow, MiddleCellCol, Board, MiddleCell),
+	(
+		Player = whitePlayer -> MiddleCell == blackCell;
+		Player = blackPlayer -> MiddleCell == whiteCell
+	),
+	movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame),
+	capturePieceAt(MiddleCellRow, MiddleCellCol, TempGame, ResultantGame), !.
+
 validateMove(_, _, _, _, _, _):-
 	write('INVALID MOVE!'), nl,
 	write('A checker can only move to a forward or a diagonally forward (north, north-east or north-west) adjacent empty cell.'), nl,
+	write('A checker can jump over a friendly checker if the next cell in the same direction of the jump is empty.'), nl,
+	write('Finally, a checker can capture an oponent\'s checker by jumping over them, similarly to the jumping move.'), nl,
+	write('In addition to the three possible move/jumping directions, a capture can also occur to the sides (left or right).'), nl,
 	pressEnterToContinue, nl,
 	fail.
 
 movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
+	% get current board
 	getGameBoard(Game, Board),
 
+	% get piece to be moved
 	getMatrixElemAt(SrcRow, SrcCol, Board, SrcElem),
-	getMatrixElemAt(DestRow, DestCol, Board, DestElem),
 
+	% empty source cell
 	setMatrixElemAtWith(SrcRow, SrcCol, emptyCell, Board, TempBoard),
+
+	% place piece on destiny cell
 	setMatrixElemAtWith(DestRow, DestCol, SrcElem, TempBoard, ResultantBoard),
 
-	(
-		DestElem = whiteCell -> decNumWhitePieces(Game, TempGame);
-		DestElem = blackCell -> decNumBlackPieces(Game, TempGame);
-		DestElem = emptyCell -> TempGame = Game
-	),
+	% save the board
+	setGameBoard(ResultantBoard, Game, ResultantGame).
 
-	setGameBoard(ResultantBoard, TempGame, ResultantGame).
+capturePieceAt(Row, Col, Game, ResultantGame):-
+	% get current board
+	getGameBoard(Game, Board),
+
+	% save captured piece cell
+	getMatrixElemAt(Row, Col, Board, CapturedPieceCell),
+
+	% empty captured piece cell
+	setMatrixElemAtWith(Row, Col, emptyCell, Board, ResultantBoard),
+
+	% save the board
+	setGameBoard(ResultantBoard, Game, TempGame),
+
+	% decrement player number of pieces according to the captured piece cell type
+	(
+		CapturedPieceCell == whiteCell -> decNumWhitePieces(TempGame, ResultantGame);
+		CapturedPieceCell == blackCell -> decNumBlackPieces(TempGame, ResultantGame);
+		CapturedPieceCell == emptyCell -> ResultantGame = TempGame
+
+	), !.
 
 %%% 1. current player; 2. next player.
 changePlayer(Game, ResultantGame):-
@@ -260,94 +322,3 @@ printBoardRowValues([Head | Tail]):-
 	getCellSymbol(Head, Piece),
 	write('  '), write(Piece), write('  |'),
 	printBoardRowValues(Tail).
-
-%======================================%
-%= @@ lists and matrices constructors =%
-%======================================%
-createMatrixSizeN(0, [[]]).
-createMatrixSizeN(N, M):-
-	createMatrixSizeN(N, N, M).
-
-createMatrixSizeN(_, 0, []).
-createMatrixSizeN(N, I, [Line | RT]):-
-	createListSizeN(N, Line),
-	I1 is I-1,
-	createMatrixSizeN(N, I1, RT).
-
-createListSizeN(0, []).
-createListSizeN(N, ['0' | Ls]):-
-	N1 is N-1,
-	createListSizeN(N1, Ls).
-
-%======================================%
-%= @@ lists and matrices manipulation =%
-%======================================%
-%%% 1. container; 2. elem at the front.
-peekFront([ElemAtTheHead|_], ElemAtTheHead).
-
-%%% 1. element row; 2. element column; 3. matrix; 4. query element.
-getMatrixElemAt(0, ElemCol, [ListAtTheHead|_], Elem):-
-	getListElemAt(ElemCol, ListAtTheHead, Elem).
-getMatrixElemAt(ElemRow, ElemCol, [_|RemainingLists], Elem):-
-	ElemRow > 0,
-	ElemRow1 is ElemRow-1,
-	getMatrixElemAt(ElemRow1, ElemCol, RemainingLists, Elem).
-
-%%% 1. element position; 2. list; 3. query element.
-getListElemAt(0, [ElemAtTheHead|_], ElemAtTheHead).
-getListElemAt(Pos, [_|RemainingElems], Elem):-
-	Pos > 0,
-	Pos1 is Pos-1,
-	getListElemAt(Pos1, RemainingElems, Elem).
-
-%%% 1. element row; 2. element column; 3. element to use on replacement; 3. current matrix; 4. resultant matrix.
-setMatrixElemAtWith(0, ElemCol, NewElem, [RowAtTheHead|RemainingRows], [NewRowAtTheHead|RemainingRows]):-
-	setListElemAtWith(ElemCol, NewElem, RowAtTheHead, NewRowAtTheHead).
-setMatrixElemAtWith(ElemRow, ElemCol, NewElem, [RowAtTheHead|RemainingRows], [RowAtTheHead|ResultRemainingRows]):-
-	ElemRow > 0,
-	ElemRow1 is ElemRow-1,
-	setMatrixElemAtWith(ElemRow1, ElemCol, NewElem, RemainingRows, ResultRemainingRows).
-
-%%% 1. position; 2. element to use on replacement; 3. current list; 4. resultant list.
-setListElemAtWith(0, Elem, [_|L], [Elem|L]).
-setListElemAtWith(I, Elem, [H|L], [H|ResL]):-
-	I > 0,
-	I1 is I-1,
-	setListElemAtWith(I1, Elem, L, ResL).
-
-%%% 1. element to be replaced; 2. element to use on replacements; 3. current matrix; 4. resultant matrix.
-replaceMatrixElemWith(_, _, [], []).
-replaceMatrixElemWith(A, B, [Line|RL], [ResLine|ResRL]):-
-	replaceListElemWith(A, B, Line, ResLine),
-	replaceMatrixElemWith(A, B, RL, ResRL).
-
-%%% 1. element to be replaced; 2. element to use on replacements; 3. current list; 4. resultant list.
-replaceListElemWith(_, _, [], []).
-replaceListElemWith(A, B, [A|L1], [B|L2]):-
-	replaceListElemWith(A, B, L1, L2).
-replaceListElemWith(A, B, [C|L1], [C|L2]):-
-	C \= A,
-	replaceListElemWith(A, B, L1, L2).
-
-%=========================================%
-%= @@ lists and matrices print functions =%
-%=========================================%
-printMatrix([], _).
-printMatrix([Line | Tail], Separator):-
-	printList(Line, Separator), nl,
-	printMatrix(Tail, Separator).
-
-printList([], _).
-printList([Head | Tail], Separator):-
-	write(Head), write(Separator),
-	printList(Tail, Separator).
-
-printMatrix([]).
-printMatrix([Line | Tail]):-
-	printList(Line), nl,
-	printMatrix(Tail).
-
-printList([]).
-printList([Head | Tail]):-
-	write(Head),
-	printList(Tail).
