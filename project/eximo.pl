@@ -76,7 +76,7 @@ playGame(Game):-
 playGame(Game):-
 	getGameNumWhitePieces(Game, NumWhitePieces),
 	getGameNumBlackPieces(Game, NumBlackPieces),
-	NumWhitePieces = 0,
+	NumWhitePieces =:= 0,
 	NumBlackPieces > 0,
 	clearConsole,
 	getGameBoard(Game, Board),
@@ -89,7 +89,7 @@ playGame(Game):-
 	getGameNumWhitePieces(Game, NumWhitePieces),
 	getGameNumBlackPieces(Game, NumBlackPieces),
 	NumWhitePieces > 0,
-	NumBlackPieces = 0,
+	NumBlackPieces =:= 0,
 	clearConsole,
 	getGameBoard(Game, Board),
 	printBoard(Board),
@@ -107,24 +107,32 @@ assertBothPlayersHavePiecesOnTheBoard(Game):-
 %= @@ game input functions =%
 %===========================%
 getPieceToBeMovedSourceCoords(SrcRow, SrcCol):-
-	write('Please insert the coordinates of the piece you wish to move:'), nl,
-	write('Row: [1-8] '), inputBoardRow(SrcRow),
-	write('Column: [a-h] '), inputBoardColumn(SrcCol),
+	write('Please insert the coordinates of the piece you wish to move and press <Enter> - example: 3f.'), nl,
+	%write(''), inputBoardRow(SrcRow),
+	%write('Column: [a-h] '), inputBoardColumn(SrcCol),
+	inputCoords(SrcRow, SrcCol),
 	nl.
 
 getPieceToBeMovedDestinyCoords(DestRow, DestCol):-
-	write('Please insert the DESTINY coordinates of that piece:'), nl,
-	write('Row: [1-8] '), inputBoardRow(DestRow),
-	write('Column: [a-h] '), inputBoardColumn(DestCol),
+	write('Please insert the DESTINY coordinates of that piece and press <Enter>.'), nl,
+	%write('Row: [1-8] '), inputBoardRow(DestRow),
+	%write('Column: [a-h] '), inputBoardColumn(DestCol),
+	inputCoords(DestRow, DestCol),
 	nl.
 
-inputBoardRow(Row):-
-	getCode(RawRow),
-	Row is RawRow-1.
+inputCoords(SrcRow, SrcCol):-
+	% read row
+	getInt(RawSrcRow),
 
-inputBoardColumn(Column):-
-	getCode(RawCol),
-	Column is RawCol-49.
+	% read column
+	getInt(RawSrcCol),
+
+	% discard enter
+	discardInputChar,
+
+	% process row and column
+	SrcRow is RawSrcRow-1,
+	SrcCol is RawSrcCol-49.
 
 validateChosenPieceOwnership(SrcRow, SrcCol, Board, Player):-
 	getMatrixElemAt(SrcRow, SrcCol, Board, Piece),
@@ -154,8 +162,8 @@ validateMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 	DeltaRow is DestRow - SrcRow,
 	DeltaCol is abs(DestCol - SrcCol),
 	(
-		Player = whitePlayer -> DeltaRow =:= 1, DeltaCol =< 1;
-		Player = blackPlayer -> DeltaRow =:= -1, DeltaCol =< 1
+		Player == whitePlayer -> DeltaRow =:= 1, DeltaCol =< 1;
+		Player == blackPlayer -> DeltaRow =:= -1, DeltaCol =< 1
 	),
 	% check if destiny cell is empty
 	getMatrixElemAt(DestRow, DestCol, Board, Cell),
@@ -169,8 +177,8 @@ validateMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 	% validate vertical movement
 	DeltaRow is DestRow - SrcRow,
 	(
-		Player = whitePlayer -> DeltaRow =:= 2;
-		Player = blackPlayer -> DeltaRow =:= -2
+		Player == whitePlayer -> DeltaRow =:= 2;
+		Player == blackPlayer -> DeltaRow =:= -2
 	),
 	% validate horizontal movement
 	DeltaCol is abs(DestCol - SrcCol),
@@ -184,8 +192,8 @@ validateMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 	write(MiddleCellRow - MiddleCellCol), nl,
 	getMatrixElemAt(MiddleCellRow, MiddleCellCol, Board, MiddleCell),
 	(
-		Player = whitePlayer -> MiddleCell == whiteCell;
-		Player = blackPlayer -> MiddleCell == blackCell
+		Player == whitePlayer -> MiddleCell == whiteCell;
+		Player == blackPlayer -> MiddleCell == blackCell
 	),
 	movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame), !.
 
@@ -197,8 +205,8 @@ validateMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 	DeltaRow is DestRow - SrcRow,
 	(
 		DeltaRow =:= 0;
-		Player = whitePlayer -> DeltaRow =:= 2;
-		Player = blackPlayer -> DeltaRow =:= -2
+		Player == whitePlayer -> DeltaRow =:= 2;
+		Player == blackPlayer -> DeltaRow =:= -2
 	),
 	% validate horizontal movement
 	DeltaCol is abs(DestCol - SrcCol),
@@ -212,12 +220,13 @@ validateMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 	write(MiddleCellRow - MiddleCellCol), nl,
 	getMatrixElemAt(MiddleCellRow, MiddleCellCol, Board, MiddleCell),
 	(
-		Player = whitePlayer -> MiddleCell == blackCell;
-		Player = blackPlayer -> MiddleCell == whiteCell
+		Player == whitePlayer -> MiddleCell == blackCell;
+		Player == blackPlayer -> MiddleCell == whiteCell
 	),
 	movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame),
 	capturePieceAt(MiddleCellRow, MiddleCellCol, TempGame, ResultantGame), !.
 
+% invalid move
 validateMove(_, _, _, _, _, _):-
 	write('INVALID MOVE!'), nl,
 	write('A checker can only move to a forward or a diagonally forward (north, north-east or north-west) adjacent empty cell.'), nl,
@@ -227,6 +236,7 @@ validateMove(_, _, _, _, _, _):-
 	pressEnterToContinue, nl,
 	fail.
 
+% move piece from source to destiny
 movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 	% get current board
 	getGameBoard(Game, Board),
@@ -243,6 +253,7 @@ movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 	% save the board
 	setGameBoard(ResultantBoard, Game, ResultantGame).
 
+% remove piece at coordinates and update player piece counter
 capturePieceAt(Row, Col, Game, ResultantGame):-
 	% get current board
 	getGameBoard(Game, Board),
@@ -268,7 +279,7 @@ capturePieceAt(Row, Col, Game, ResultantGame):-
 changePlayer(Game, ResultantGame):-
 	getGamePlayerTurn(Game, Player),
 	(
-		Player = whitePlayer ->
+		Player == whitePlayer ->
 		NextPlayer = blackPlayer;
 		NextPlayer = whitePlayer
 	),

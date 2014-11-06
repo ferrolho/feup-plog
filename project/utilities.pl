@@ -24,4 +24,11 @@ getChar(Input):-
 getCode(Input):-
 	get_code(TempInput),
 	get_code(_),
-	Input is TempInput-48.
+	Input is TempInput - 48.
+
+getInt(Input):-
+	get_code(TempInput),
+	Input is TempInput - 48.
+
+discardInputChar:-
+	get_code(_).
