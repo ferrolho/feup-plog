@@ -58,17 +58,22 @@ playGame(Game):-
 
 	clearConsole,
 	printBoard(Board),
-	printTurnInfo(Player),
+	printTurnInfo(Player), nl, nl,
 	getPieceToBeMovedSourceCoords(SrcRow, SrcCol),
 	validateChosenPieceOwnership(SrcRow, SrcCol, Board, Player),
 
 	clearConsole,
 	printBoard(Board),
-	printTurnInfo(Player),
+	printTurnInfo(Player), nl, nl,
 	getPieceToBeMovedDestinyCoords(DestRow, DestCol),
 	validateDifferentCoordinates(SrcRow, SrcCol, DestRow, DestCol),
 
-	validateMove(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame),
+	(
+		validateOrdinaryMove(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame);
+		validateJumpMove(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame);
+		validateCaptureMove(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame);
+		invalidMove
+	),
 
 	changePlayer(TempGame, ResultantGame), !,
 	playGame(ResultantGame).
@@ -108,17 +113,11 @@ assertBothPlayersHavePiecesOnTheBoard(Game):-
 %===========================%
 getPieceToBeMovedSourceCoords(SrcRow, SrcCol):-
 	write('Please insert the coordinates of the piece you wish to move and press <Enter> - example: 3f.'), nl,
-	%write(''), inputBoardRow(SrcRow),
-	%write('Column: [a-h] '), inputBoardColumn(SrcCol),
-	inputCoords(SrcRow, SrcCol),
-	nl.
+	inputCoords(SrcRow, SrcCol), nl.
 
 getPieceToBeMovedDestinyCoords(DestRow, DestCol):-
 	write('Please insert the DESTINY coordinates of that piece and press <Enter>.'), nl,
-	%write('Row: [1-8] '), inputBoardRow(DestRow),
-	%write('Column: [a-h] '), inputBoardColumn(DestCol),
-	inputCoords(DestRow, DestCol),
-	nl.
+	inputCoords(DestRow, DestCol), nl.
 
 inputCoords(SrcRow, SrcCol):-
 	% read row
@@ -155,9 +154,10 @@ validateDifferentCoordinates(_, _, _, _):-
 %= @@ board manipulation functions =%
 %===================================%
 % ordinary move
-validateMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
+validateOrdinaryMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 	getGameBoard(Game, Board),
 	getGamePlayerTurn(Game, Player),
+
 	% check if destiny is a forward or diagonally forward adjacent empty cell
 	DeltaRow is DestRow - SrcRow,
 	DeltaCol is abs(DestCol - SrcCol),
@@ -165,69 +165,84 @@ validateMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 		Player == whitePlayer -> DeltaRow =:= 1, DeltaCol =< 1;
 		Player == blackPlayer -> DeltaRow =:= -1, DeltaCol =< 1
 	),
+
 	% check if destiny cell is empty
 	getMatrixElemAt(DestRow, DestCol, Board, Cell),
 	Cell == emptyCell,
+
+	% actually move the checker
 	movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame), !.
 
 % jump move
-validateMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
-	getGameBoard(Game, Board),
-	getGamePlayerTurn(Game, Player),
-	% validate vertical movement
+validateJumpMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
+	testJumpMove(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame), !,
+	getGamePlayerTurn(TempGame, Player),
+	getGameBoard(TempGame, TempBoard),
 	DeltaRow is DestRow - SrcRow,
+
+	% if that piece can continue to jump, then it must do so
 	(
-		Player == whitePlayer -> DeltaRow =:= 2;
-		Player == blackPlayer -> DeltaRow =:= -2
-	),
-	% validate horizontal movement
-	DeltaCol is abs(DestCol - SrcCol),
-	(DeltaCol =:= 0; DeltaCol =:= 2),
-	% check if destiny cell is empty
-	getMatrixElemAt(DestRow, DestCol, Board, Cell),
-	Cell == emptyCell,
-	% check if cell between source and destiny is friendly
-	MiddleCellRow is SrcRow + DeltaRow // 2,
-	MiddleCellCol is SrcCol + (DestCol - SrcCol) // 2,
-	write(MiddleCellRow - MiddleCellCol), nl,
-	getMatrixElemAt(MiddleCellRow, MiddleCellCol, Board, MiddleCell),
-	(
-		Player == whitePlayer -> MiddleCell == whiteCell;
-		Player == blackPlayer -> MiddleCell == blackCell
-	),
-	movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame), !.
+		testJumpMove(DestRow, DestCol, DestRow + DeltaRow, DestCol - 2, TempGame, _);
+		testJumpMove(DestRow, DestCol, DestRow + DeltaRow, DestCol, TempGame, _);
+		testJumpMove(DestRow, DestCol, DestRow + DeltaRow, DestCol + 2, TempGame, _)
+		->
+		(
+			repeat,
+
+			clearConsole,
+			printBoard(TempBoard),
+			printTurnInfo(Player),
+			write('# If a checker can continue to jump, then it must do so.'), nl, nl,
+			getPieceToBeMovedDestinyCoords(NextDestRow, NextDestCol),
+			validateDifferentCoordinates(DestRow, DestCol, NextDestRow, NextDestCol),
+
+			setGameBoard(TempBoard, TempGame, ItGame),
+			(
+				validateJumpMove(DestRow, DestCol, NextDestRow, NextDestCol, ItGame, ResultantGame);
+				invalidMove
+			), !
+		)
+		;
+		ResultantGame = TempGame
+	), !.
 
 % capture move
-validateMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
-	getGameBoard(Game, Board),
-	getGamePlayerTurn(Game, Player),
-	% validate vertical movement
+validateCaptureMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
+	testCaptureMove(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame), !,
+	getGamePlayerTurn(TempGame, Player),
+	getGameBoard(TempGame, TempBoard),
 	DeltaRow is DestRow - SrcRow,
+
+	% if that piece can continue to capture, then it must do so
 	(
-		DeltaRow =:= 0;
-		Player == whitePlayer -> DeltaRow =:= 2;
-		Player == blackPlayer -> DeltaRow =:= -2
-	),
-	% validate horizontal movement
-	DeltaCol is abs(DestCol - SrcCol),
-	(DeltaCol =:= 0; DeltaCol =:= 2),
-	% check if destiny cell is empty
-	getMatrixElemAt(DestRow, DestCol, Board, Cell),
-	Cell == emptyCell,
-	% check if cell between source and destiny is owned by the oponent
-	MiddleCellRow is SrcRow + DeltaRow // 2,
-	MiddleCellCol is SrcCol + (DestCol - SrcCol) // 2,
-	write(MiddleCellRow - MiddleCellCol), nl,
-	getMatrixElemAt(MiddleCellRow, MiddleCellCol, Board, MiddleCell),
-	(
-		Player == whitePlayer -> MiddleCell == blackCell;
-		Player == blackPlayer -> MiddleCell == whiteCell
-	),
-	movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame),
-	capturePieceAt(MiddleCellRow, MiddleCellCol, TempGame, ResultantGame), !.
+		testCaptureMove(DestRow, DestCol, DestRow, DestCol - 2, TempGame, _);
+		testCaptureMove(DestRow, DestCol, DestRow + DeltaRow, DestCol - 2, TempGame, _);
+		testCaptureMove(DestRow, DestCol, DestRow + DeltaRow, DestCol, TempGame, _);
+		testCaptureMove(DestRow, DestCol, DestRow + DeltaRow, DestCol + 2, TempGame, _);
+		testCaptureMove(DestRow, DestCol, DestRow, DestCol + 2, TempGame, _)
+		->
+		(
+			repeat,
+
+			clearConsole,
+			printBoard(TempBoard),
+			printTurnInfo(Player),
+			write('# If a checker can continue to capture, then it must do so.'), nl, nl,
+			getPieceToBeMovedDestinyCoords(NextDestRow, NextDestCol),
+			validateDifferentCoordinates(DestRow, DestCol, NextDestRow, NextDestCol),
+
+			setGameBoard(TempBoard, TempGame, ItGame),
+			(
+				validateCaptureMove(DestRow, DestCol, NextDestRow, NextDestCol, ItGame, ResultantGame);
+				invalidMove
+			), !
+		)
+		;
+		ResultantGame = TempGame
+	), !.
 
 % invalid move
-validateMove(_, _, _, _, _, _):-
+invalidMove:-
 	write('INVALID MOVE!'), nl,
 	write('A checker can only move to a forward or a diagonally forward (north, north-east or north-west) adjacent empty cell.'), nl,
 	write('A checker can jump over a friendly checker if the next cell in the same direction of the jump is empty.'), nl,
@@ -236,7 +251,71 @@ validateMove(_, _, _, _, _, _):-
 	pressEnterToContinue, nl,
 	fail.
 
-% move piece from source to destiny
+testJumpMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
+	getGameBoard(Game, Board),
+	getGamePlayerTurn(Game, Player),
+
+	% validate vertical movement
+	DeltaRow is DestRow - SrcRow,
+	(
+		Player == whitePlayer -> DeltaRow =:= 2;
+		Player == blackPlayer -> DeltaRow =:= -2
+	),
+
+	% validate horizontal movement
+	DeltaCol is abs(DestCol - SrcCol),
+	(DeltaCol =:= 0; DeltaCol =:= 2),
+
+	% check if destiny cell is empty
+	getMatrixElemAt(DestRow, DestCol, Board, Cell),
+	Cell == emptyCell,
+
+	% check if cell between source and destiny is friendly
+	MiddleCellRow is SrcRow + DeltaRow // 2,
+	MiddleCellCol is SrcCol + (DestCol - SrcCol) // 2,
+	getMatrixElemAt(MiddleCellRow, MiddleCellCol, Board, MiddleCell),
+	(
+		Player == whitePlayer -> MiddleCell == whiteCell;
+		Player == blackPlayer -> MiddleCell == blackCell
+	),
+
+	% actually move the checker
+	movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame).
+
+testCaptureMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
+	getGameBoard(Game, Board),
+	getGamePlayerTurn(Game, Player),
+
+	% validate vertical movement
+	DeltaRow is DestRow - SrcRow,
+	(
+		DeltaRow =:= 0;
+		Player == whitePlayer -> DeltaRow =:= 2;
+		Player == blackPlayer -> DeltaRow =:= -2
+	),
+
+	% validate horizontal movement
+	DeltaCol is abs(DestCol - SrcCol),
+	(DeltaCol =:= 0; DeltaCol =:= 2),
+
+	% check if destiny cell is empty
+	getMatrixElemAt(DestRow, DestCol, Board, Cell),
+	Cell == emptyCell,
+
+	% check if cell between source and destiny is owned by the oponent
+	MiddleCellRow is SrcRow + DeltaRow // 2,
+	MiddleCellCol is SrcCol + (DestCol - SrcCol) // 2,
+	getMatrixElemAt(MiddleCellRow, MiddleCellCol, Board, MiddleCell),
+	(
+		Player == whitePlayer -> MiddleCell == blackCell;
+		Player == blackPlayer -> MiddleCell == whiteCell
+	),
+
+	% actually move the checker and capture the oponent checker
+	movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame),
+	capturePieceAt(MiddleCellRow, MiddleCellCol, TempGame, ResultantGame).
+
+% moves a piece from source to destiny
 movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 	% get current board
 	getGameBoard(Game, Board),
@@ -291,8 +370,7 @@ changePlayer(Game, ResultantGame):-
 %%% prints the name of the player of the current turn
 printTurnInfo(Player):-
 	getPlayerName(Player, PlayerName),
-	write('# It is '), write(PlayerName), write(' player\'s turn to play.'), nl,
-	nl, !.
+	write('# It is '), write(PlayerName), write(' player\'s turn to play.'), nl, !.
 
 printBoard([Line | Tail]):-
 	printColumnIdentifiers, nl,
