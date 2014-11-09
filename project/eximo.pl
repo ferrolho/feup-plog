@@ -68,45 +68,28 @@ playGame(Game):-
 	getPieceToBeMovedDestinyCoords(DestRow, DestCol),
 	validateDifferentCoordinates(SrcRow, SrcCol, DestRow, DestCol),
 
-	(
-		validateOrdinaryMove(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame);
-		validateJumpMove(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame);
-		validateCaptureMove(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame);
-		invalidMove
-	),
-
+	validateMove(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame),
 	changePlayer(TempGame, ResultantGame), !,
 	playGame(ResultantGame).
 
+% game is over when one of the players have no checkers left
 playGame(Game):-
-	getGameNumWhitePieces(Game, NumWhitePieces),
-	getGameNumBlackPieces(Game, NumBlackPieces),
-	NumWhitePieces =:= 0,
-	NumBlackPieces > 0,
 	clearConsole,
 	getGameBoard(Game, Board),
 	printBoard(Board),
-	write('# Game over. Black player won, congratulations!'), nl,
-	nl,
-	pressEnterToContinue, !.
 
-playGame(Game):-
+	% get the number of checkers of each player to know who has lost
 	getGameNumWhitePieces(Game, NumWhitePieces),
 	getGameNumBlackPieces(Game, NumBlackPieces),
-	NumWhitePieces > 0,
-	NumBlackPieces =:= 0,
-	clearConsole,
-	getGameBoard(Game, Board),
-	printBoard(Board),
-	write('# Game over. White player won, congratulations!'), nl,
+	(
+		(NumWhitePieces =:= 0, NumBlackPieces > 0) ->
+			(write('# Game over. Black player won, congratulations!'), nl);
+		(NumWhitePieces > 0, NumBlackPieces =:= 0) ->
+			(write('# Game over. White player won, congratulations!'), nl);
+		(write('# ERROR: unexpected game over.'), nl)
+	),
 	nl,
 	pressEnterToContinue, !.
-
-assertBothPlayersHavePiecesOnTheBoard(Game):-
-	getGameNumWhitePieces(Game, NumWhitePieces),
-	getGameNumBlackPieces(Game, NumBlackPieces),
-	NumWhitePieces > 0,
-	NumBlackPieces > 0, !.
 
 %===========================%
 %= @@ game input functions =%
@@ -133,6 +116,15 @@ inputCoords(SrcRow, SrcCol):-
 	SrcRow is RawSrcRow-1,
 	SrcCol is RawSrcCol-49.
 
+%==============================================%
+%= @@ board validation/manipulation functions =%
+%==============================================%
+assertBothPlayersHavePiecesOnTheBoard(Game):-
+	getGameNumWhitePieces(Game, NumWhitePieces),
+	getGameNumBlackPieces(Game, NumBlackPieces),
+	NumWhitePieces > 0,
+	NumBlackPieces > 0, !.
+
 validateChosenPieceOwnership(SrcRow, SrcCol, Board, Player):-
 	getMatrixElemAt(SrcRow, SrcCol, Board, Piece),
 	pieceIsOwnedBy(Piece, Player), !.
@@ -150,9 +142,13 @@ validateDifferentCoordinates(_, _, _, _):-
 	pressEnterToContinue, nl,
 	fail.
 
-%===================================%
-%= @@ board manipulation functions =%
-%===================================%
+% tries to validate a move according to it properties
+validateMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
+	validateOrdinaryMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame);
+	validateJumpMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame);
+	validateCaptureMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame);
+	invalidMove.
+
 % ordinary move
 validateOrdinaryMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 	getGameBoard(Game, Board),
@@ -176,15 +172,18 @@ validateOrdinaryMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 % jump move
 validateJumpMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 	testJumpMove(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame), !,
+
 	getGamePlayerTurn(TempGame, Player),
 	getGameBoard(TempGame, TempBoard),
 	DeltaRow is DestRow - SrcRow,
 
 	% if that piece can continue to jump, then it must do so
 	(
-		testJumpMove(DestRow, DestCol, DestRow + DeltaRow, DestCol - 2, TempGame, _);
-		testJumpMove(DestRow, DestCol, DestRow + DeltaRow, DestCol, TempGame, _);
-		testJumpMove(DestRow, DestCol, DestRow + DeltaRow, DestCol + 2, TempGame, _)
+		(
+			testJumpMove(DestRow, DestCol, DestRow + DeltaRow, DestCol - 2, TempGame, _);
+			testJumpMove(DestRow, DestCol, DestRow + DeltaRow, DestCol, TempGame, _);
+			testJumpMove(DestRow, DestCol, DestRow + DeltaRow, DestCol + 2, TempGame, _)
+		)
 		->
 		(
 			repeat,
@@ -201,25 +200,27 @@ validateJumpMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 				validateJumpMove(DestRow, DestCol, NextDestRow, NextDestCol, ItGame, ResultantGame);
 				invalidMove
 			), !
-		)
-		;
+		);
 		ResultantGame = TempGame
 	), !.
 
 % capture move
 validateCaptureMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 	testCaptureMove(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame), !,
+
 	getGamePlayerTurn(TempGame, Player),
 	getGameBoard(TempGame, TempBoard),
 	DeltaRow is DestRow - SrcRow,
 
 	% if that piece can continue to capture, then it must do so
 	(
-		testCaptureMove(DestRow, DestCol, DestRow, DestCol - 2, TempGame, _);
-		testCaptureMove(DestRow, DestCol, DestRow + DeltaRow, DestCol - 2, TempGame, _);
-		testCaptureMove(DestRow, DestCol, DestRow + DeltaRow, DestCol, TempGame, _);
-		testCaptureMove(DestRow, DestCol, DestRow + DeltaRow, DestCol + 2, TempGame, _);
-		testCaptureMove(DestRow, DestCol, DestRow, DestCol + 2, TempGame, _)
+		(
+			testCaptureMove(DestRow, DestCol, DestRow, DestCol - 2, TempGame, _);
+			testCaptureMove(DestRow, DestCol, DestRow + DeltaRow, DestCol - 2, TempGame, _);
+			testCaptureMove(DestRow, DestCol, DestRow + DeltaRow, DestCol, TempGame, _);
+			testCaptureMove(DestRow, DestCol, DestRow + DeltaRow, DestCol + 2, TempGame, _);
+			testCaptureMove(DestRow, DestCol, DestRow, DestCol + 2, TempGame, _)
+		)
 		->
 		(
 			repeat,
@@ -236,8 +237,7 @@ validateCaptureMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 				validateCaptureMove(DestRow, DestCol, NextDestRow, NextDestCol, ItGame, ResultantGame);
 				invalidMove
 			), !
-		)
-		;
+		);
 		ResultantGame = TempGame
 	), !.
 
