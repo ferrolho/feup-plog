@@ -102,6 +102,10 @@ getPieceToBeMovedDestinyCoords(DestRow, DestCol):-
 	write('Please insert the DESTINY coordinates of that piece and press <Enter>.'), nl,
 	inputCoords(DestRow, DestCol), nl.
 
+getPieceToBeInsertedDestinyCoords(Row, Col):-
+	write('Please insert the coordinates where to place an extra checker and press <Enter>.'), nl,
+	inputCoords(Row, Col), nl.
+
 inputCoords(SrcRow, SrcCol):-
 	% read row
 	getInt(RawSrcRow),
@@ -171,20 +175,25 @@ validateOrdinaryMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 
 % jump move
 validateJumpMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
-	testJumpMove(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame), !,
+	testJumpMove(SrcRow, SrcCol, DestRow, DestCol, Game),
+
+	% actually move the checker
+	DeltaRow is DestRow - SrcRow,
+	movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame), !,
 
 	getGamePlayerTurn(TempGame, Player),
 	getGameBoard(TempGame, TempBoard),
-	DeltaRow is DestRow - SrcRow,
 
 	% if that piece can continue to jump, then it must do so
+	NewRow is DestRow + DeltaRow,
+	NewColL is DestCol - 2,
+	NewColR is DestCol + 2,
 	(
 		(
-			testJumpMove(DestRow, DestCol, DestRow + DeltaRow, DestCol - 2, TempGame, _);
-			testJumpMove(DestRow, DestCol, DestRow + DeltaRow, DestCol, TempGame, _);
-			testJumpMove(DestRow, DestCol, DestRow + DeltaRow, DestCol + 2, TempGame, _)
-		)
-		->
+			testJumpMove(DestRow, DestCol, NewRow, NewColL, TempGame);
+			testJumpMove(DestRow, DestCol, NewRow, DestCol, TempGame);
+			testJumpMove(DestRow, DestCol, NewRow, NewColR, TempGame)
+		) ->
 		(
 			repeat,
 
@@ -206,22 +215,30 @@ validateJumpMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 
 % capture move
 validateCaptureMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
-	testCaptureMove(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame), !,
+	testCaptureMove(SrcRow, SrcCol, DestRow, DestCol, Game),
+
+	% actually move the checker and capture the oponent checker
+	DeltaRow is DestRow - SrcRow,
+	MiddleCellRow is SrcRow + DeltaRow // 2,
+	MiddleCellCol is SrcCol + (DestCol - SrcCol) // 2,
+	capturePieceAt(MiddleCellRow, MiddleCellCol, Game, CaptTempGame),
+	movePiece(SrcRow, SrcCol, DestRow, DestCol, CaptTempGame, TempGame), !,
 
 	getGamePlayerTurn(TempGame, Player),
 	getGameBoard(TempGame, TempBoard),
-	DeltaRow is DestRow - SrcRow,
 
 	% if that piece can continue to capture, then it must do so
+	(Player == whitePlayer -> NewRow is DestRow + 2; Player == blackPlayer -> NewRow is DestRow - 2),
+	NewColL is DestCol - 2,
+	NewColR is DestCol + 2,
 	(
 		(
-			testCaptureMove(DestRow, DestCol, DestRow, DestCol - 2, TempGame, _);
-			testCaptureMove(DestRow, DestCol, DestRow + DeltaRow, DestCol - 2, TempGame, _);
-			testCaptureMove(DestRow, DestCol, DestRow + DeltaRow, DestCol, TempGame, _);
-			testCaptureMove(DestRow, DestCol, DestRow + DeltaRow, DestCol + 2, TempGame, _);
-			testCaptureMove(DestRow, DestCol, DestRow, DestCol + 2, TempGame, _)
-		)
-		->
+			testCaptureMove(DestRow, DestCol, DestRow, NewColL, TempGame);
+			testCaptureMove(DestRow, DestCol, NewRow, NewColL, TempGame);
+			testCaptureMove(DestRow, DestCol, NewRow, DestCol, TempGame);
+			testCaptureMove(DestRow, DestCol, NewRow, NewColR, TempGame);
+			testCaptureMove(DestRow, DestCol, DestRow, NewColR, TempGame)
+		) ->
 		(
 			repeat,
 
@@ -251,7 +268,7 @@ invalidMove:-
 	pressEnterToContinue, nl,
 	fail.
 
-testJumpMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
+testJumpMove(SrcRow, SrcCol, DestRow, DestCol, Game):-
 	getGameBoard(Game, Board),
 	getGamePlayerTurn(Game, Player),
 
@@ -277,12 +294,9 @@ testJumpMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 	(
 		Player == whitePlayer -> MiddleCell == whiteCell;
 		Player == blackPlayer -> MiddleCell == blackCell
-	),
+	).
 
-	% actually move the checker
-	movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame).
-
-testCaptureMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
+testCaptureMove(SrcRow, SrcCol, DestRow, DestCol, Game):-
 	getGameBoard(Game, Board),
 	getGamePlayerTurn(Game, Player),
 
@@ -309,11 +323,7 @@ testCaptureMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 	(
 		Player == whitePlayer -> MiddleCell == blackCell;
 		Player == blackPlayer -> MiddleCell == whiteCell
-	),
-
-	% actually move the checker and capture the oponent checker
-	movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame),
-	capturePieceAt(MiddleCellRow, MiddleCellCol, TempGame, ResultantGame).
+	).
 
 % moves a piece from source to destiny
 movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
@@ -330,7 +340,51 @@ movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 	setMatrixElemAtWith(DestRow, DestCol, SrcElem, TempBoard, ResultantBoard),
 
 	% save the board
-	setGameBoard(ResultantBoard, Game, ResultantGame).
+	setGameBoard(ResultantBoard, Game, TempGame),
+
+	% if checker reached the other end of the board
+	(
+		(DestRow =:= 0; DestRow =:= 7) -> (
+			capturePieceAt(DestRow, DestCol, TempGame, CaptResultantGame),
+			getGamePlayerTurn(CaptResultantGame, Player),
+
+			repeat,
+			clearConsole,
+			getGameBoard(CaptResultantGame, NewResultantBoard),
+			printBoard(NewResultantBoard),
+			write('# Your checker has reached the end of the board and has been removed.'), nl,
+			(
+				dropZoneHasOneEmptyCell(CaptResultantGame, Player) -> (
+					write('# If you have enough empty cells on your drop zone, you can place up to two new checkers there.'), nl, nl,
+					getPieceToBeInsertedDestinyCoords(ExtraChecker1Row, ExtraChecker1Col),
+					validateExtraCheckerCoords(ExtraChecker1Row, ExtraChecker1Col, CaptResultantGame, Player),
+					insertPieceAt(ExtraChecker1Row, ExtraChecker1Col, CaptResultantGame, Ins1ResultantGame), !,
+
+					repeat,
+					clearConsole,
+					getGameBoard(Ins1ResultantGame, Ins1ResultantBoard),
+					printBoard(Ins1ResultantBoard),
+					write('# An extra checker has been placed on the board.'), nl,
+					(
+						dropZoneHasOneEmptyCell(Ins1ResultantGame, Player) -> (
+							write('# You can still place another extra checker on an empty cell.'), nl, nl,
+							getPieceToBeInsertedDestinyCoords(ExtraChecker2Row, ExtraChecker2Col),
+							validateExtraCheckerCoords(ExtraChecker2Row, ExtraChecker2Col, Ins1ResultantGame, Player),
+							insertPieceAt(ExtraChecker2Row, ExtraChecker2Col, Ins1ResultantGame, ResultantGame), !
+						); (
+							write('# There are no more empty cells on your drop zone to place the second checker.'), nl, nl,
+							pressEnterToContinue,
+							ResultantGame = Ins1ResultantGame
+						)
+					)
+				); (
+					write('# There are no empty cells on your drop zone.'), nl,
+					pressEnterToContinue
+				)
+			)
+		);
+			ResultantGame = TempGame
+	).
 
 % remove piece at coordinates and update player piece counter
 capturePieceAt(Row, Col, Game, ResultantGame):-
@@ -351,7 +405,77 @@ capturePieceAt(Row, Col, Game, ResultantGame):-
 		CapturedPieceCell == whiteCell -> decNumWhitePieces(TempGame, ResultantGame);
 		CapturedPieceCell == blackCell -> decNumBlackPieces(TempGame, ResultantGame);
 		CapturedPieceCell == emptyCell -> ResultantGame = TempGame
+	), !.
 
+% true when the drop zone of the specified player has at least one empty cell
+dropZoneHasOneEmptyCell(Game, Player):-
+	getGameBoard(Game, Board),
+
+	(
+		Player == whitePlayer -> (
+			scanDropZone(0, Board); scanDropZone(1, Board);
+			cellIsEmpty(2, 1, Board); cellIsEmpty(2, 2, Board); cellIsEmpty(2, 5, Board); cellIsEmpty(2, 6, Board)
+		); Player == blackPlayer -> (
+			cellIsEmpty(5, 1, Board); cellIsEmpty(5, 2, Board); cellIsEmpty(5, 5, Board); cellIsEmpty(5, 6, Board);
+			scanDropZone(6, Board); scanDropZone(7, Board)
+		); (
+			write('ERROR: unexpected player at dropZoneHasOneEmptyCell()'), nl
+		)
+	).
+
+scanDropZone(Row, Board):-
+	scanDropZone(Row, 6, Board).
+scanDropZone(Row, Col, Board):-
+	Col > 0,
+	Col1 is Col-1,
+	(cellIsEmpty(Row, Col, Board); scanDropZone(Row, Col1, Board)).
+
+validateExtraCheckerCoords(Row, Col, Game, Player):-
+	getGameBoard(Game, Board),
+	cellIsEmpty(Row, Col, Board),
+	(
+		Player == whitePlayer -> (
+			((Row =:= 0; Row =:= 1), Col > 0, Col < 7);
+			(Row =:= 2, (Col =:= 1; Col =:= 2; Col =:= 5; Col =:= 6))
+		); Player == blackPlayer -> (
+			(Row =:= 5, (Col =:= 1; Col =:= 2; Col =:= 5; Col =:= 6));
+			((Row =:= 6; Row =:= 7), Col > 0, Col < 7)
+		)
+	).
+validateExtraCheckerCoords(_, _, _, _):-
+	write('INVALID CELL!'), nl,
+	write('Extra checkers can only be placed on empty cells inside your drop zone.'), nl,
+	pressEnterToContinue,
+	fail.
+
+cellIsEmpty(Row, Column, Board):-
+	% write('scanning row, col: '), write(Row), write(', '), write(Column), nl,
+	getMatrixElemAt(Row, Column, Board, Cell),
+	Cell == emptyCell.
+
+% insert piece at coordinates and update player piece counter
+insertPieceAt(Row, Col, Game, ResultantGame):-
+	% get current board
+	getGameBoard(Game, Board),
+
+	% figure which piece to insert based on player turn
+	getGamePlayerTurn(Game, Player),
+	(
+		Player == whitePlayer -> Cell = whiteCell;
+		Cell = blackCell
+	),
+
+	% insert piece
+	setMatrixElemAtWith(Row, Col, Cell, Board, ResultantBoard),
+
+	% save the board
+	setGameBoard(ResultantBoard, Game, TempGame),
+
+	% increment player number of pieces according to the captured piece cell type
+	(
+		Cell == whiteCell -> incNumWhitePieces(TempGame, ResultantGame);
+		Cell == blackCell -> incNumBlackPieces(TempGame, ResultantGame);
+		Cell == emptyCell -> ResultantGame = TempGame
 	), !.
 
 %%% 1. current player; 2. next player.
@@ -359,7 +483,7 @@ changePlayer(Game, ResultantGame):-
 	getGamePlayerTurn(Game, Player),
 	(
 		Player == whitePlayer ->
-		NextPlayer = blackPlayer;
+			NextPlayer = blackPlayer;
 		NextPlayer = whitePlayer
 	),
 	setGamePlayerTurn(NextPlayer, Game, ResultantGame).

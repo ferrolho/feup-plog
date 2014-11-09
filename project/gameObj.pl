@@ -15,12 +15,24 @@ createGame(Game):-
 
 decNumWhitePieces(Game, ResultantGame):-
 	getGameNumWhitePieces(Game, NumWhitePieces),
-	NumWhitePieces1 is NumWhitePieces-1,
+	NumWhitePieces1 is NumWhitePieces - 1,
 	setGameNumWhitePieces(NumWhitePieces1, Game, ResultantGame).
 
 decNumBlackPieces(Game, ResultantGame):-
 	getGameNumBlackPieces(Game, NumBlackPieces),
-	NumBlackPieces1 is NumBlackPieces-1,
+	NumBlackPieces1 is NumBlackPieces - 1,
+	setGameNumBlackPieces(NumBlackPieces1, Game, ResultantGame).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+incNumWhitePieces(Game, ResultantGame):-
+	getGameNumWhitePieces(Game, NumWhitePieces),
+	NumWhitePieces1 is NumWhitePieces + 1,
+	setGameNumWhitePieces(NumWhitePieces1, Game, ResultantGame).
+
+incNumBlackPieces(Game, ResultantGame):-
+	getGameNumBlackPieces(Game, NumBlackPieces),
+	NumBlackPieces1 is NumBlackPieces + 1,
 	setGameNumBlackPieces(NumBlackPieces1, Game, ResultantGame).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
