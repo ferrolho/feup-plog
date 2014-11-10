@@ -16,7 +16,7 @@
 %= @@ includes =%
 %===============%
 :- include('containers.pl').
-:- include('gameObj.pl').
+:- include('gameClass.pl').
 :- include('menus.pl').
 :- include('utilities.pl').
 
