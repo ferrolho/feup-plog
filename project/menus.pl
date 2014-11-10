@@ -5,7 +5,7 @@ mainMenu:-
 	printMainMenu,
 	getChar(Input),
 	(
-		Input = '1' -> startGame, mainMenu;
+		Input = '1' -> gameModeMenu, mainMenu;
 		Input = '2' -> helpMenu, mainMenu;
 		Input = '3' -> aboutMenu, mainMenu;
 		Input = '4';
@@ -18,16 +18,44 @@ mainMenu:-
 
 printMainMenu:-
 	clearConsole,
-	write('==========================='), nl,
-	write('=     ..:: EXIMO ::..     ='), nl,
-	write('==========================='), nl,
-	write('=                         ='), nl,
-	write('=   1. Play               ='), nl,
-	write('=   2. How to play        ='), nl,
-	write('=   3. About              ='), nl,
-	write('=   4. Exit               ='), nl,
-	write('=                         ='), nl,
-	write('==========================='), nl,
+	write('==============================='), nl,
+	write('=       ..:: EXIMO ::..       ='), nl,
+	write('==============================='), nl,
+	write('=                             ='), nl,
+	write('=   1. Play                   ='), nl,
+	write('=   2. How to play            ='), nl,
+	write('=   3. About                  ='), nl,
+	write('=   4. Exit                   ='), nl,
+	write('=                             ='), nl,
+	write('==============================='), nl,
+	write('Choose an option:'), nl.
+
+gameModeMenu:-
+	printgameModeMenu,
+	getChar(Input),
+	(
+		Input = '1' -> startGame;
+		Input = '2' -> startGame;
+		Input = '3';
+
+		nl,
+		write('Error: invalid input.'), nl,
+		pressEnterToContinue, nl,
+		gameModeMenu
+	).
+
+printgameModeMenu:-
+	clearConsole,
+	write('==============================='), nl,
+	write('=     ..:: Game Mode ::..     ='), nl,
+	write('==============================='), nl,
+	write('=                             ='), nl,
+	write('=   1. Player vs. Player      ='), nl,
+	write('=   2. Player vs. Computer    ='), nl,
+	write('=   3. Back                   ='), nl,
+	write('=                             ='), nl,
+	write('=                             ='), nl,
+	write('==============================='), nl,
 	write('Choose an option:'), nl.
 
 startGame:-
@@ -162,13 +190,14 @@ helpMenu:-
 
 aboutMenu:-
 	clearConsole,
-	write('============================='), nl,
-	write('=      ..:: About ::..      ='), nl,
-	write('============================='), nl,
-	write('=                           ='), nl,
-	write('=   Authors:                ='), nl,
-	write('=    > Henrique Ferrolho    ='), nl,
-	write('=    > Joao Pereira         ='), nl,
-	write('=                           ='), nl,
-	write('============================='), nl,
+	write('==============================='), nl,
+	write('=       ..:: About ::..       ='), nl,
+	write('==============================='), nl,
+	write('=                             ='), nl,
+	write('=   Authors:                  ='), nl,
+	write('=    > Henrique Ferrolho      ='), nl,
+	write('=    > Joao Pereira           ='), nl,
+	write('=                             ='), nl,
+	write('=                             ='), nl,
+	write('==============================='), nl,
 	pressEnterToContinue, nl.
