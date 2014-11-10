@@ -102,3 +102,13 @@ initialBoard([
 	[emptyCell, blackCell, blackCell, emptyCell, emptyCell, blackCell, blackCell, emptyCell],
 	[emptyCell, blackCell, blackCell, blackCell, blackCell, blackCell, blackCell, emptyCell],
 	[emptyCell, blackCell, blackCell, blackCell, blackCell, blackCell, blackCell, emptyCell]]).
+
+stalemateTestBoard([
+	[emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell],
+	[emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, emptyCell],
+	[emptyCell, emptyCell, emptyCell, emptyCell, emptyCell, whiteCell, whiteCell, emptyCell],
+	[emptyCell, emptyCell, blackCell, blackCell, blackCell, blackCell, blackCell, blackCell],
+	[emptyCell, blackCell, blackCell, blackCell, blackCell, emptyCell, blackCell, blackCell],
+	[blackCell, blackCell, blackCell, blackCell, blackCell, blackCell, blackCell, blackCell],
+	[blackCell, blackCell, blackCell, blackCell, blackCell, blackCell, blackCell, blackCell],
+	[blackCell, blackCell, blackCell, blackCell, blackCell, blackCell, blackCell, blackCell]]).

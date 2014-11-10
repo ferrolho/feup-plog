@@ -51,6 +51,7 @@ pieceIsOwnedBy(blackCell, blackPlayer).
 %======================%
 playGame(Game):-
 	assertBothPlayersHavePiecesOnTheBoard(Game),
+	assertCurrentPlayerCanMove(Game),
 	getGameBoard(Game, Board),
 	getGamePlayerTurn(Game, Player),
 
@@ -72,7 +73,30 @@ playGame(Game):-
 	changePlayer(TempGame, ResultantGame), !,
 	playGame(ResultantGame).
 
-% game is over when one of the players have no checkers left
+% game is over when one of the players can not make any kind of move - stalemate
+playGame(Game):-
+	clearConsole,
+	getGameBoard(Game, Board),
+	printBoard(Board),
+
+	% confirm that both players have at least one checker, else the game over is not due to a stalemate
+	getGameNumWhitePieces(Game, NumWhitePieces),
+	getGameNumBlackPieces(Game, NumBlackPieces),
+	NumWhitePieces > 0, NumBlackPieces > 0,
+
+	% check which player won
+	getGamePlayerTurn(Game, Player),
+	(
+		Player == whitePlayer ->
+			(write('# Game over. Black player won by stalemating white player, congratulations!'), nl);
+		Player == blackPlayer ->
+			(write('# Game over. White player won by stalemating black player, congratulations!'), nl);
+		(write('# ERROR: unexpected game over and both players have at least one checker.'), nl)
+	),
+	nl,
+	pressEnterToContinue, !.
+
+% game is over when one of the players has no checkers left
 playGame(Game):-
 	clearConsole,
 	getGameBoard(Game, Board),
@@ -128,6 +152,56 @@ assertBothPlayersHavePiecesOnTheBoard(Game):-
 	getGameNumBlackPieces(Game, NumBlackPieces),
 	NumWhitePieces > 0,
 	NumBlackPieces > 0, !.
+
+assertCurrentPlayerCanMove(Game):-
+	assertCurrentPlayerCanMove(7, Game).
+assertCurrentPlayerCanMove(Row, Game):-
+	Row >= 0,
+	Row1 is Row - 1,
+	(
+		assertCurrentPlayerCanMove(Row, 7, Game);
+		assertCurrentPlayerCanMove(Row1, Game)
+	).
+assertCurrentPlayerCanMove(Row, Column, Game):-
+	Column >= 0,
+	Column1 is Column - 1,
+	(
+		currentPlayerCanMovePieceAt(Row, Column, Game);
+		assertCurrentPlayerCanMove(Row, Column1, Game)
+	).
+
+currentPlayerCanMovePieceAt(Row, Column, Game):-
+	getGamePlayerTurn(Game, Player),
+	getGameBoard(Game, Board),
+
+	% check if the piece on this cell is from the current player
+	getMatrixElemAt(Row, Column, Board, Cell),
+	(
+		Player == whitePlayer -> (Cell == whiteCell, Delta is 1);
+		Player == blackPlayer -> (Cell == blackCell, Delta is -1)
+	),
+
+	NewRow1 is Row + Delta,
+	NewRow2 is Row + 2 * Delta,
+	NewColL1 is Column - 1,
+	NewColR1 is Column + 1,
+	NewColL2 is Column - 2,
+	NewColR2 is Column + 2,
+
+	% check if that piece can make any move
+	(
+		testOrdinaryMove(Row, Column, NewRow1, NewColL1, Game);
+		testOrdinaryMove(Row, Column, NewRow1, Column, Game);
+		testOrdinaryMove(Row, Column, NewRow1, NewColR1, Game);
+		testJumpMove(Row, Column, NewRow2, NewColL2, Game);
+		testJumpMove(Row, Column, NewRow2, Column, Game);
+		testJumpMove(Row, Column, NewRow2, NewColR2, Game);
+		testCaptureMove(Row, Column, Row, NewColL2, Game);
+		testCaptureMove(Row, Column, NewRow2, NewColL2, Game);
+		testCaptureMove(Row, Column, NewRow2, Column, Game);
+		testCaptureMove(Row, Column, NewRow2, NewColR2, Game);
+		testCaptureMove(Row, Column, Row, NewColR2, Game)
+	).
 
 validateChosenPieceOwnership(SrcRow, SrcCol, Board, Player):-
 	getMatrixElemAt(SrcRow, SrcCol, Board, Piece),
@@ -267,6 +341,25 @@ invalidMove:-
 	write('In addition to the three possible move/jumping directions, a capture can also occur to the sides (left or right).'), nl,
 	pressEnterToContinue, nl,
 	fail.
+
+testOrdinaryMove(SrcRow, SrcCol, DestRow, DestCol, Game):-
+	getGameBoard(Game, Board),
+	getGamePlayerTurn(Game, Player),
+
+	% validate vertical movement
+	DeltaRow is DestRow - SrcRow,
+	(
+		Player == whitePlayer -> DeltaRow =:= 1;
+		Player == blackPlayer -> DeltaRow =:= -1
+	),
+
+	% validate horizontal movement
+	DeltaCol is abs(DestCol - SrcCol),
+	DeltaCol =< 1,
+
+	% check if destiny cell is empty
+	getMatrixElemAt(DestRow, DestCol, Board, Cell),
+	Cell == emptyCell.
 
 testJumpMove(SrcRow, SrcCol, DestRow, DestCol, Game):-
 	getGameBoard(Game, Board),
