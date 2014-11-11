@@ -15,6 +15,9 @@
 %===============%
 %= @@ includes =%
 %===============%
+:- use_module(library(random)).
+:- use_module(library(system)).
+:- include('bot.pl').
 :- include('containers.pl').
 :- include('gameClass.pl').
 :- include('menus.pl').
@@ -24,6 +27,7 @@
 %= @@ game launcher =%
 %====================%
 eximo:-
+	initializeRandomSeed,
 	mainMenu.
 
 %===============================%
@@ -46,38 +50,51 @@ getCellSymbol(_, '?').
 pieceIsOwnedBy(whiteCell, whitePlayer).
 pieceIsOwnedBy(blackCell, blackPlayer).
 
+currentPlayerOwnsCell(Row, Col, Game):-
+	getGameBoard(Game, Board), getGamePlayerTurn(Game, Player),
+	getMatrixElemAt(Row, Col, Board, Cell), pieceIsOwnedBy(Cell, Player).
+
+gameMode(pvp).
+gameMode(pvb).
+gameMode(bvb).
+
 %======================%
 %= @@ main game cycle =%
 %======================%
 playGame(Game):-
 	assertBothPlayersHavePiecesOnTheBoard(Game),
 	assertCurrentPlayerCanMove(Game),
-	getGameBoard(Game, Board),
-	getGamePlayerTurn(Game, Player),
+	(
+		% bot vs. bot
+		(getGameMode(Game, Mode), Mode == bvb) -> (
+			getGameBoard(Game, Board), getGamePlayerTurn(Game, Player),
+			clearConsole, printBoard(Board), printTurnInfo(Player), nl, nl,
+			%pressEnterToContinue,
+			letRandomBotPlay(Game, TempGame), !,
 
-	repeat,
+			getGameBoard(TempGame, TempBoard), getGamePlayerTurn(TempGame, TempPlayer),
+			clearConsole, printBoard(TempBoard), printTurnInfo(TempPlayer), nl, nl,
+			%pressEnterToContinue,
+			letGreedyBotPlay(TempGame, ResultantGame), !,
+			playGame(ResultantGame), !
+		);
+		% player vs. player or player vs. bot
+		(
+			letHumanPlay(Game, ResultantGame),
+			(
+				% player vs. player
+				(getGameMode(ResultantGame, Mode), Mode == pvp) -> (playGame(ResultantGame), !);
 
-	clearConsole,
-	printBoard(Board),
-	printTurnInfo(Player), nl, nl,
-	getPieceToBeMovedSourceCoords(SrcRow, SrcCol),
-	validateChosenPieceOwnership(SrcRow, SrcCol, Board, Player),
-
-	clearConsole,
-	printBoard(Board),
-	printTurnInfo(Player), nl, nl,
-	getPieceToBeMovedDestinyCoords(DestRow, DestCol),
-	validateDifferentCoordinates(SrcRow, SrcCol, DestRow, DestCol),
-
-	validateMove(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame),
-	changePlayer(TempGame, ResultantGame), !,
-	playGame(ResultantGame).
+				% player vs. bot
+				(letGreedyBotPlay(ResultantGame, BotResultantGame), playGame(BotResultantGame), !)
+			)
+		)
+	).
 
 % game is over when one of the players can not make any kind of move - stalemate
 playGame(Game):-
 	clearConsole,
-	getGameBoard(Game, Board),
-	printBoard(Board),
+	getGameBoard(Game, Board), printBoard(Board),
 
 	% confirm that both players have at least one checker, else the game over is not due to a stalemate
 	getGameNumWhitePieces(Game, NumWhitePieces),
@@ -99,8 +116,7 @@ playGame(Game):-
 % game is over when one of the players has no checkers left
 playGame(Game):-
 	clearConsole,
-	getGameBoard(Game, Board),
-	printBoard(Board),
+	getGameBoard(Game, Board), printBoard(Board),
 
 	% get the number of checkers of each player to know who has lost
 	getGameNumWhitePieces(Game, NumWhitePieces),
@@ -114,6 +130,26 @@ playGame(Game):-
 	),
 	nl,
 	pressEnterToContinue, !.
+
+letHumanPlay(Game, ResultantGame):-
+	getGameBoard(Game, Board), getGamePlayerTurn(Game, Player),
+
+	repeat,
+
+	clearConsole,
+	printBoard(Board),
+	printTurnInfo(Player), nl, nl,
+	getPieceToBeMovedSourceCoords(SrcRow, SrcCol),
+	validateChosenPieceOwnership(SrcRow, SrcCol, Board, Player),
+
+	clearConsole,
+	printBoard(Board),
+	printTurnInfo(Player), nl, nl,
+	getPieceToBeMovedDestinyCoords(DestRow, DestCol),
+	validateDifferentCoordinates(SrcRow, SrcCol, DestRow, DestCol),
+
+	validateMove(SrcRow, SrcCol, DestRow, DestCol, Game, TempGame),
+	changePlayer(TempGame, ResultantGame), !.
 
 %===========================%
 %= @@ game input functions =%
@@ -225,7 +261,12 @@ validateMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 	validateOrdinaryMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame);
 	validateJumpMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame);
 	validateCaptureMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame);
-	invalidMove.
+	(
+		getGamePlayerTurn(Game, Player),
+		(
+			(Mode == pvp; (Mode == pvb, Player == whitePlayer)) -> invalidMove
+		)
+	).
 
 % ordinary move
 validateOrdinaryMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
@@ -275,13 +316,19 @@ validateJumpMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 			printBoard(TempBoard),
 			printTurnInfo(Player),
 			write('# If a checker can continue to jump, then it must do so.'), nl, nl,
-			getPieceToBeMovedDestinyCoords(NextDestRow, NextDestCol),
+
+			getGameMode(Game, Mode), !,
+			(
+				(Mode == bvb; (Mode == pvb, Player == blackPlayer)) ->
+					(random(0, 8, NextDestRow), random(0, 8, NextDestCol));
+				getPieceToBeMovedDestinyCoords(NextDestRow, NextDestCol)
+			),
 			validateDifferentCoordinates(DestRow, DestCol, NextDestRow, NextDestCol),
 
 			setGameBoard(TempBoard, TempGame, ItGame),
 			(
 				validateJumpMove(DestRow, DestCol, NextDestRow, NextDestCol, ItGame, ResultantGame);
-				invalidMove
+				((Mode == pvp; (Mode == pvb, Player == whitePlayer)) -> invalidMove)
 			), !
 		);
 		ResultantGame = TempGame
@@ -320,13 +367,19 @@ validateCaptureMove(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 			printBoard(TempBoard),
 			printTurnInfo(Player),
 			write('# If a checker can continue to capture, then it must do so.'), nl, nl,
-			getPieceToBeMovedDestinyCoords(NextDestRow, NextDestCol),
+
+			getGameMode(Game, Mode), !,
+			(
+				(Mode == bvb; (Mode == pvb, Player == blackPlayer)) ->
+					(random(0, 8, NextDestRow), random(0, 8, NextDestCol));
+				getPieceToBeMovedDestinyCoords(NextDestRow, NextDestCol)
+			),
 			validateDifferentCoordinates(DestRow, DestCol, NextDestRow, NextDestCol),
 
 			setGameBoard(TempBoard, TempGame, ItGame),
 			(
 				validateCaptureMove(DestRow, DestCol, NextDestRow, NextDestCol, ItGame, ResultantGame);
-				invalidMove
+				((Mode == pvp; (Mode == pvb, Player == whitePlayer)) -> invalidMove)
 			), !
 		);
 		ResultantGame = TempGame
@@ -449,7 +502,13 @@ movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 			(
 				dropZoneHasOneEmptyCell(CaptResultantGame, Player) -> (
 					write('# If you have enough empty cells on your drop zone, you can place up to two new checkers there.'), nl, nl,
-					getPieceToBeInsertedDestinyCoords(ExtraChecker1Row, ExtraChecker1Col),
+
+					getGameMode(CaptResultantGame, Mode), !,
+					(
+						(Mode == bvb; (Mode == pvb, Player == blackPlayer)) ->
+							(random(0, 8, ExtraChecker1Row), random(0, 8, ExtraChecker1Col));
+						getPieceToBeInsertedDestinyCoords(ExtraChecker1Row, ExtraChecker1Col)
+					),
 					validateExtraCheckerCoords(ExtraChecker1Row, ExtraChecker1Col, CaptResultantGame, Player),
 					insertPieceAt(ExtraChecker1Row, ExtraChecker1Col, CaptResultantGame, Ins1ResultantGame), !,
 
@@ -461,7 +520,13 @@ movePiece(SrcRow, SrcCol, DestRow, DestCol, Game, ResultantGame):-
 					(
 						dropZoneHasOneEmptyCell(Ins1ResultantGame, Player) -> (
 							write('# You can still place another extra checker on an empty cell.'), nl, nl,
-							getPieceToBeInsertedDestinyCoords(ExtraChecker2Row, ExtraChecker2Col),
+
+							!,
+							(
+								(Mode == bvb; (Mode == pvb, Player == blackPlayer)) ->
+									(random(0, 8, ExtraChecker2Row), random(0, 8, ExtraChecker2Col));
+								getPieceToBeInsertedDestinyCoords(ExtraChecker2Row, ExtraChecker2Col)
+							),
 							validateExtraCheckerCoords(ExtraChecker2Row, ExtraChecker2Col, Ins1ResultantGame, Player),
 							insertPieceAt(ExtraChecker2Row, ExtraChecker2Col, Ins1ResultantGame, ResultantGame), !
 						); (
@@ -535,7 +600,9 @@ validateExtraCheckerCoords(Row, Col, Game, Player):-
 			((Row =:= 6; Row =:= 7), Col > 0, Col < 7)
 		)
 	).
-validateExtraCheckerCoords(_, _, _, _):-
+validateExtraCheckerCoords(_, _, Game, Player):-
+	getGameMode(Game, Mode),
+	(Mode == pvp; (Mode == pvb, Player == whitePlayer)),
 	write('INVALID CELL!'), nl,
 	write('Extra checkers can only be placed on empty cells inside your drop zone.'), nl,
 	pressEnterToContinue,

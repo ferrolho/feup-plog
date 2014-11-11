@@ -6,10 +6,17 @@
 %%% 1. game, a list with:
 %%%  0. the board state;
 %%%  1. a list with: the number of pieces of each player;
-%%%  2. the current player turn.
-createGame(Game):-
+%%%  2. the current player turn;
+%%%  3. the game mode: player vs. player (pvp), player vs. bot (pvb) or bot vs. bot (bvb).
+createPvPGame(Game):-
 	initialBoard(Board),
-	Game = [Board, [16, 16], whitePlayer], !.
+	Game = [Board, [16, 16], whitePlayer, pvp], !.
+createPvBGame(Game):-
+	initialBoard(Board),
+	Game = [Board, [16, 16], whitePlayer, pvb], !.
+createBvBGame(Game):-
+	initialBoard(Board),
+	Game = [Board, [16, 16], whitePlayer, bvb], !.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -79,6 +86,14 @@ getGamePlayerTurn(Game, Player):-
 
 setGamePlayerTurn(Player, Game, ResultantGame):-
 	setListElemAtWith(2, Player, Game, ResultantGame).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+getGameMode(Game, Mode):-
+	getListElemAt(3, Game, Mode).
+
+setGameMode(Mode, Game, ResultantGame):-
+	setListElemAtWith(3, Mode, Game, ResultantGame).
 
 %====================%
 %= @@ board presets =%

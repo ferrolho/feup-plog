@@ -32,3 +32,8 @@ getInt(Input):-
 
 discardInputChar:-
 	get_code(_).
+
+initializeRandomSeed:-
+	now(Usec), Seed is Usec mod 30269,
+	getrand(random(X, Y, Z, _)),
+	setrand(random(Seed, X, Y, Z)), !.

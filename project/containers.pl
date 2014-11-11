@@ -16,6 +16,38 @@ createListSizeN(N, ['0' | Ls]):-
 	N1 is N-1,
 	createListSizeN(N1, Ls).
 
+listPushBack([], Elem, [Elem]).
+%listPushBack([Head|[]], Elem, [Head, Elem]).
+listPushBack([Head|Tail], Elem, [Head|NewTail]):-
+	listPushBack(Tail, Elem, NewTail).
+
+getListSize([], 0).
+getListSize([_|Tail], Size):-
+	getListSize(Tail, TailSize),
+	Size is TailSize + 1.
+
+largestList(List1, List2, List1):-
+	getListSize(List1, List1Size),
+	getListSize(List2, List2Size),
+	List1Size > List2Size.
+largestList(_, List2, List2).
+
+getLargestListInListOfLists(ListOfLists, LargestList):-
+	getLargestListInListOfLists(ListOfLists, [], LargestList).
+getLargestListInListOfLists([Head|[]], LargestListSoFar, Head):-
+	getListSize(Head, HeadSize),
+	getListSize(LargestListSoFar, LargestListSoFarSize),
+	HeadSize > LargestListSoFarSize.
+getLargestListInListOfLists([_|[]], LargestListSoFar, LargestListSoFar).
+getLargestListInListOfLists([Head|Tail], LargestListSoFar, LargestList):-
+	getListSize(Head, HeadSize),
+	getListSize(LargestListSoFar, LargestListSoFarSize),
+	(
+		(HeadSize > LargestListSoFarSize) ->
+		getLargestListInListOfLists(Tail, Head, LargestList);
+		getLargestListInListOfLists(Tail, LargestListSoFar, LargestList)
+	).
+
 %======================================%
 %= @@ lists and matrices manipulation =%
 %======================================%
