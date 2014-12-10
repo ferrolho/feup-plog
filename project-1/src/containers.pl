@@ -17,7 +17,6 @@ createListSizeN(N, ['0' | Ls]):-
 	createListSizeN(N1, Ls).
 
 listPushBack([], Elem, [Elem]).
-%listPushBack([Head|[]], Elem, [Head, Elem]).
 listPushBack([Head|Tail], Elem, [Head|NewTail]):-
 	listPushBack(Tail, Elem, NewTail).
 
