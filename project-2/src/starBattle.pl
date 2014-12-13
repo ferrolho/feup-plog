@@ -40,10 +40,11 @@ starBattle:-
 
 starBattle(BoardNumber, NumStars):-
 	clearConsole,
-
 	write('==============='), nl,
 	write('= Star Battle ='), nl,
 	write('==============='), nl,
+	nl,
+	format('Trying to place ~d stars on board no. ~d', [NumStars, BoardNumber]), nl,
 	nl,
 
 	getBoard(BoardNumber, Board),
