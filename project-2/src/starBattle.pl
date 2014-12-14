@@ -52,7 +52,6 @@ starBattle(BoardNumber, NumStars):-
 	solveBoard(Board, NumStars, Result), !,
 	pressEnterToContinue,
 
-	getBoardSize(Board, BoardSize),
-	printResult(Result, BoardSize, NumStars),
-	nl,
-	write('==============='), nl.
+	%getBoardSize(Board, BoardSize),
+	%printResult(Result, BoardSize, NumStars),
+	printResultBoard(Board, Result, NumStars), !.

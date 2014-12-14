@@ -11,7 +11,7 @@ clearConsole(N):-
 
 pressEnterToContinue:-
 	write('Press <Enter> to show the solution.'), nl,
-	waitForEnter, nl, !.
+	waitForEnter, !.
 waitForEnter:-
 	get_char(_).
 
