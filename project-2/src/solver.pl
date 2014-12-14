@@ -23,9 +23,10 @@ solveBoard(Board, S, Result):-
 	noAdjacentStars(Result, S, N),
 
 	statistics(walltime, _),
-	labeling([ffc, bisect], Result),
+	labeling([bisect], Result),
 	statistics(walltime, [_, ElapsedTime | _]),
 	format('An answer has been found!~nElapsed time: ~3d seconds', ElapsedTime), nl,
+	fd_statistics,
 	nl.
 
 
