@@ -9,6 +9,12 @@ clearConsole(N):-
 	N1 is N-1,
 	clearConsole(N1).
 
+pressEnterToContinue:-
+	write('Press <Enter> to show the solution.'), nl,
+	waitForEnter, nl, !.
+waitForEnter:-
+	get_char(_).
+
 exactly(_, [], 0).
 exactly(X, [Y|L], N) :-
 	X #= Y #<=> B,

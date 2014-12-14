@@ -1,3 +1,63 @@
+%===============================%
+%= @@ board printing functions =%
+%===============================%
+printBoard([Line | Tail]):-
+	length(Line, N),
+	printBoardTopBorder(N),
+	printBoardRow(Line),
+	printRemainingBoard(Tail),
+	nl, !.
+
+printBoardTopBorder(N):-
+	N1 is N - 1, createSeparatorN(N1, '______', TopBorder),
+	write(' '), printList(TopBorder), write('_____'), nl.
+
+printRemainingBoard([]).
+printRemainingBoard([Last]):-
+	printLastBoardRow(Last).
+printRemainingBoard([Line | Tail]):-
+	printBoardRow(Line),
+	printRemainingBoard(Tail).
+
+printBoardRow(Line):-
+	write('|'), printBoardRowTop(Line), nl,
+	write('|'), printBoardRowValues(Line), nl,
+	write('|'), printBoardRowBottom(Line), nl.
+printLastBoardRow(Line):-
+	write('|'), printBoardRowTop(Line), nl,
+	write('|'), printBoardRowValues(Line), nl,
+	write('|'), printLastBoardRowBottom(Line), nl.
+
+printBoardRowTop([]).
+printBoardRowTop([_]):-
+	write('     |').
+printBoardRowTop([_|Tail]):-
+	write('     .'), printBoardRowTop(Tail).
+
+printBoardRowValues([]).
+printBoardRowValues([Last]):-
+	write('  '), write(Last), write('  |').
+printBoardRowValues([Head | Tail]):-
+	write('  '), write(Head), write('  .'),
+	printBoardRowValues(Tail).
+
+printBoardRowBottom([]).
+printBoardRowBottom([_]):-
+	write(' . . |').
+printBoardRowBottom([_|Tail]):-
+	write(' . . .'), printBoardRowBottom(Tail).
+
+printLastBoardRowBottom([]).
+printLastBoardRowBottom([_]):-
+	write('_____|').
+printLastBoardRowBottom([_|Tail]):-
+	write('______'), printLastBoardRowBottom(Tail).
+
+createSeparatorN(0, _, []).
+createSeparatorN(N, SS, [SS | Ls]):-
+	N1 is N-1,
+	createSeparatorN(N1, SS, Ls).
+
 %================================%
 %= @@ result printing functions =%
 %================================%
@@ -28,31 +88,3 @@ printResultRowValues(Result, N, S, Row, Column):-
 
 	Column1 is Column + 1,
 	printResultRowValues(Result, N, S, Row, Column1).
-
-
-%===============================%
-%= @@ board printing functions =%
-%===============================%
-printBoard([Line | Tail]):-
-	printBoardRow(Line),
-	printRemainingBoard(Tail),
-	nl, !.
-
-printRemainingBoard([]).
-printRemainingBoard([Line | Tail]):-
-	printBoardRow(Line),
-	printRemainingBoard(Tail).
-
-printBoardRow([], []).
-printBoardRow(Line):-
-	printBoardRowValues(Line), nl.
-
-printBoardRowValues([]).
-printBoardRowValues([Head | Tail]):-
-	write(Head), write(' '),
-	printBoardRowValues(Tail).
-
-createSeparatorN(0, _, []).
-createSeparatorN(N, SS, [SS | Ls]):-
-	N1 is N-1,
-	createSeparatorN(N1, SS, Ls).

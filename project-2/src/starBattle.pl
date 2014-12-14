@@ -44,13 +44,13 @@ starBattle(BoardNumber, NumStars):-
 	write('= Star Battle ='), nl,
 	write('==============='), nl,
 	nl,
-	format('Trying to place ~d stars on board no. ~d', [NumStars, BoardNumber]), nl,
-	nl,
+	format('Trying to place ~d stars on board no. ~d:', [NumStars, BoardNumber]), nl,
 
 	getBoard(BoardNumber, Board),
 	printBoard(Board), !,
 
 	solveBoard(Board, NumStars, Result), !,
+	pressEnterToContinue,
 
 	getBoardSize(Board, BoardSize),
 	printResult(Result, BoardSize, NumStars),

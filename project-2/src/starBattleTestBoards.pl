@@ -3,9 +3,10 @@
 %=======================================%
 getBoard(N, Board):-
 	(
-		N =:= 1 -> testBoard4x4(Board);
-		N =:= 2 -> testBoard5x5(Board);
-		N =:= 3 -> testBoard8x8(Board);
+		N =:= 1 -> testBoard4x4_1(Board);
+		N =:= 2 -> testBoard5x5_1(Board);
+		N =:= 3 -> testBoard8x8_1(Board);
+		N =:= 4 -> testBoard8x8_2(Board);
 
 		nl,
 		write('Error: the specified board does not exist.'),
@@ -16,14 +17,14 @@ getBoard(N, Board):-
 %= @@ test boards =%
 %==================%
 % expected answer:2413
-testBoard4x4([
+testBoard4x4_1([
 	[1, 2, 1, 1],
 	[1, 1, 1, 3],
 	[4, 1, 1, 1],
 	[1, 1, 1, 1]]).
 
 % expected answer: 14253
-testBoard5x5([
+testBoard5x5_1([
 	[1, 1, 2, 2, 2],
 	[1, 2, 2, 3, 2],
 	[1, 2, 2, 2, 2],
@@ -31,7 +32,7 @@ testBoard5x5([
 	[4, 4, 4, 5, 5]]).
 
 % expected answer: 2468246813571357
-testBoard8x8([
+testBoard8x8_1([
 	[1, 2, 3, 4, 5, 6, 7, 8],
 	[1, 2, 3, 4, 5, 6, 7, 8],
 	[1, 2, 3, 4, 5, 6, 7, 8],
@@ -40,3 +41,14 @@ testBoard8x8([
 	[1, 2, 3, 4, 5, 6, 7, 8],
 	[1, 2, 3, 4, 5, 6, 7, 8],
 	[1, 2, 3, 4, 5, 6, 7, 8]]).
+
+% expected answer: 2468246813571357
+testBoard8x8_2([
+	[1, 1, 1, 1, 1, 1, 1, 1],
+	[2, 2, 2, 2, 2, 2, 2, 2],
+	[3, 3, 3, 3, 3, 3, 3, 3],
+	[4, 4, 4, 4, 4, 4, 4, 4],
+	[5, 5, 5, 5, 5, 5, 5, 5],
+	[6, 6, 6, 6, 6, 6, 6, 6],
+	[7, 7, 7, 7, 7, 7, 7, 7],
+	[8, 8, 8, 8, 8, 8, 8, 8]]).

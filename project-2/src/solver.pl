@@ -1,5 +1,7 @@
 solveBoard(Board, S, Result):-
 	getBoardSize(Board, N),
+
+	% a board NxN can not have more than N/2 stars
 	S #=< (N - 1) // 2 + 1,
 
 	ResultLength #= N * S,
@@ -21,9 +23,9 @@ solveBoard(Board, S, Result):-
 	noAdjacentStars(Result, S, N),
 
 	statistics(walltime, _),
-	labeling([], Result),
+	labeling([ffc, bisect], Result),
 	statistics(walltime, [_, ElapsedTime | _]),
-	format('ElapsedTime: ~3d seconds', ElapsedTime), nl,
+	format('An answer has been found!~nElapsed time: ~3d seconds', ElapsedTime), nl,
 	nl.
 
 
@@ -31,6 +33,48 @@ solveBoard(Board, S, Result):-
 
 getBoardSize([Head|_], N):-
 	length(Head, N).
+
+
+%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%
+
+validateNumOfOccurrencesForEachElem(Elements, NumOfOccurrences, N):-
+	validateNumOfOccurrencesForEachElem(Elements, NumOfOccurrences, N, 1).
+
+validateNumOfOccurrencesForEachElem(Result, S, N, N):-
+	exactly(N, Result, S).
+validateNumOfOccurrencesForEachElem(Result, S, N, I):-
+	exactly(I, Result, S),
+	I1 #= I + 1,
+	validateNumOfOccurrencesForEachElem(Result, S, N, I1).
+
+
+%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%
+
+fetchResultRegions(Board, Result, ResRows, ResCols, ResultRegions):-
+	fetchResultRegions(Board, Result, ResRows, ResCols, [], 1, ResultRegions).
+
+fetchResultRegions(_, _, ResRows, ResCols, ResultRegions, Pos, ResultRegions):-
+	Pos #= ResRows * ResCols + 1.
+fetchResultRegions(Board, Result, ResRows, ResCols, ResultRegionsSoFar, Pos, ResultRegions):-
+	% calculating row and col of result to access
+	Row #= (Pos - 1) // ResCols + 1,
+	Col #= ((Pos - 1) mod ResCols) + 1,
+
+	% get the value of result[Row][Col], which is the column where a star is placed
+	getMatrixOfListElemAt(Result, ResRows, ResCols, Row, Col, StarCol),
+
+	% get line Row of the board
+	getListElemAt(Board, Row, Line),
+
+	% get the region of that position - board[Row][StarCol]
+	element(StarCol, Line, Region),
+
+	% push value to ResultRegionsSoFar
+	listPushBack(ResultRegionsSoFar, Region, NewResultRegionsSoFar),
+
+	% fetch next element
+	Pos1 #= Pos + 1,
+	fetchResultRegions(Board, Result, ResRows, ResCols, NewResultRegionsSoFar, Pos1, ResultRegions).
 
 
 %-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%
@@ -110,45 +154,3 @@ validateHorizontalDistanceBetweenStars(Result, Pos1, Pos2):-
 	element(Pos2, Result, Col2),
 	Dist #= abs(Col2 - Col1),
 	Dist #> 1.
-
-
-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%
-
-validateNumOfOccurrencesForEachElem(Elements, NumOfOccurrences, N):-
-	validateNumOfOccurrencesForEachElem(Elements, NumOfOccurrences, N, 1).
-
-validateNumOfOccurrencesForEachElem(Result, S, N, N):-
-	exactly(N, Result, S).
-validateNumOfOccurrencesForEachElem(Result, S, N, I):-
-	exactly(I, Result, S),
-	I1 #= I + 1,
-	validateNumOfOccurrencesForEachElem(Result, S, N, I1).
-
-
-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%-%
-
-fetchResultRegions(Board, Result, ResRows, ResCols, ResultRegions):-
-	fetchResultRegions(Board, Result, ResRows, ResCols, [], 1, ResultRegions).
-
-fetchResultRegions(_, _, ResRows, ResCols, ResultRegions, Pos, ResultRegions):-
-	Pos #= ResRows * ResCols + 1.
-fetchResultRegions(Board, Result, ResRows, ResCols, ResultRegionsSoFar, Pos, ResultRegions):-
-	% calculating row and col of result to access
-	Row #= (Pos - 1) // ResCols + 1,
-	Col #= ((Pos - 1) mod ResCols) + 1,
-
-	% get the value of result[Row][Col], which is the column where a star is placed
-	getMatrixOfListElemAt(Result, ResRows, ResCols, Row, Col, StarCol),
-
-	% get line Row of the board
-	getListElemAt(Board, Row, Line),
-
-	% get the region of that position - board[Row][StarCol]
-	element(StarCol, Line, Region),
-
-	% push value to ResultRegionsSoFar
-	listPushBack(ResultRegionsSoFar, Region, NewResultRegionsSoFar),
-
-	% fetch next element
-	Pos1 #= Pos + 1,
-	fetchResultRegions(Board, Result, ResRows, ResCols, NewResultRegionsSoFar, Pos1, ResultRegions).
