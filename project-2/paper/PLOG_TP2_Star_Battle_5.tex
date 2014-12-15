@@ -68,7 +68,7 @@ O puzzle Star Battle consiste num tabuleiro \textbf{quadrado}, onde existe um da
 \centering
 \includegraphics[height=6.2cm]{res/starBattleExample}
 \caption{Exemplo de um tabuleiro de Star Battle com dimensões 10x10; e consequentemente, com 10 regiões delimitadas a negrito.}
-\label{fig:example}
+\label{fig:starBattleExample}
 \end{figure}
 
 Juntamente com o tabuleiro é também fornecido um número, que representa o \textbf{número de estrelas} a colocar em cada \textit{linha}, \textit{coluna} e \textit{região} do tabuleiro. A dificuldade do puzzle é consequência do facto de as estrelas \textit{não poderem ser adjacentes umas às outras}, nem sequer diagonalmente.
@@ -77,7 +77,7 @@ Juntamente com o tabuleiro é também fornecido um número, que representa o \te
 \centering
 \includegraphics[height=6.2cm]{res/starBattleExampleSolution}
 \caption{Solução do tabuleiro apresentado na figura anterior, onde era necessário colocar 2 estrelas em cada linha, coluna e região, sem que nenhuma estrela esteja em contacto com qualquer outra estrela.}
-\label{fig:example}
+\label{fig:starBattleExampleSolution}
 \end{figure}
 
 
@@ -91,7 +91,7 @@ Cada região é identificada por um número único, diferente de todos os outros
 \centering
 \includegraphics[height=4cm]{res/boardRepresentationExample}
 \caption{Um tabuleiro do puzzle Star Battle e a sua respectiva representação na implementação em Prolog do grupo.}
-\label{fig:example}
+\label{fig:boardRepresentationExample}
 \end{figure}
 
 
@@ -99,25 +99,93 @@ Cada região é identificada por um número único, diferente de todos os outros
 
 Com esta representação em mente, a solução pretendida pode tomar a forma de uma lista simples, com tamanho igual ao do tabuleiro vezes o número de estrelas a colocar em cada linha/coluna/região.
 
-Os primeiros X elementos da solução representam a coluna onde as X estrelas da primeira linha do tabuleiro têm que ser colocadas; os seguintes X elementos, representam a coluna onde as X estrelas da segunda linha têm que ser colocadas; e assim sucessivamente, até à última linha do tabuleiro.
+Os primeiros S elementos da solução representam a coluna onde as S estrelas da primeira linha do tabuleiro têm que ser colocadas; os seguintes S elementos, representam a coluna onde as S estrelas da segunda linha têm que ser colocadas; e assim sucessivamente, até à última linha do tabuleiro.
 
 \begin{figure}
 \centering
 \includegraphics[height=4cm]{res/solutionRepresentationExample}
 \caption{A solução de um puzzle Star Battle e a sua respectiva representação na implementação em Prolog do grupo.}
-\label{fig:example}
+\label{fig:solutionRepresentationExample}
 \end{figure}
 
-Sendo \textbf{N} o tamanho do tabuleiro, e \textbf{S} o número de estrelas a colocar em cada \emph{linha/coluna/região}, o tamanho da lista com a solução do tabuleiro é dado pela expressão:
+Sendo \textbf{N} o tamanho do tabuleiro, e \textbf{S} o número de estrelas a colocar em cada \emph{linha/coluna/região}, o \textbf{tamanho da solução} é dado pela expressão:
 
 \begin{equation}
 ResultLength = N * S
 \end{equation}
 
+O \textbf{domínio} da solução é definido pela dimensão do tabuleiro: uma estrela, para uma dada linha, pode ser colocada desde a coluna \textbf{1}, até à coluna \textbf{N}.
+
+\break
+
+De seguida é apresentado um excerto do predicado de resolução de um tabuleiro, onde se encontram chamadas aos predicados \emph{length} e \emph{domain} relativamente à solução do puzzle.
+
+\begin{verbatim}
+solveBoard(Board, S, Result):-
+    getBoardSize(Board, N),
+
+    % a board NxN can not have more than N/2 stars
+    S #=< (N - 1) // 2 + 1,
+
+    ResultLength #= N * S,
+    length(Result, ResultLength),
+    domain(Result, 1, N),
+    (...)
+\end{verbatim}
+
 
 \subsection{Restrições}
 
-\subsection{Função de Avaliação}
+Considera-se novamente - e até ao final deste artigo - que \textbf{N} é o tamanho do tabuleiro, e \textbf{S} o número de estrelas a colocar em cada \emph{linha/coluna/região}.
+
+A resolução do problema pode ser resumida em três restrições:
+\begin{enumerate}
+  \item Cada coluna deve conter exactamente S estrelas;
+  \item Cada região deve conter exactamente S estrelas;
+  \item Não pode haver estrelas adjacentes.
+\end{enumerate}
+Note-se que não está enumerada a restrição: \emph{cada linha deve conter exactamente S estrelas.} Esta regra do puzzle é uma \textbf{consequência} das três restrições acima enumeradas, não havendo necessidade de a implementar também.
+
+
+\subsubsection{Cada coluna deve conter exactamente S estrelas}
+\paragraph{}
+
+Para um tabuleiro de tamanho \textbf{N}, percorrem-se recursivamente as colunas de \textbf{1 a N}, e verifica-se se o número de ocorrências dessa coluna na lista da solução é exactamente igual ao número de estrelas, \textbf{S}.
+
+
+\subsubsection{Cada região deve conter exactamente S estrelas}
+\paragraph{}
+
+Esta restrição é muito semelhante à anterior, na medida em que temos que verificar que, para cada região de \textbf{1 a N}, o número de ocorrências para uma dada região é exactamente igual ao número de estrelas, \textbf{S}.
+Para isso, declara-se que existe uma lista adicional, com o mesmo tamanho e domínio da lista da solução, mas que em vez de conter a coluna de cada estrela, em cada linha, contém a região onde cada estrela, em cada linha, está colocada.
+
+
+\subsubsection{Não pode haver estrelas adjacentes}
+\paragraph{}
+
+Finalmente, a terceira e última restrição define que, numa linha, as estrelas têm que estar colocadas a uma distância superior a \textbf{1 unidade} entre elas - isto garante que não há estrelas adjacentes numa linha.
+
+Para garantir que não há estrelas adjacentes entre duas linhas, define-se que para cada estrela de uma determinada linha, esta tem que estar a uma distância superior a \textbf{1 unidade} de qualquer estrela da linha anterior.
+
+
+\subsubsection{Predicados das restrições}
+\paragraph{}
+
+De seguida é apresentada mais uma porção do predicado de resolução do puzzle, onde são chamados os predicados referentes a cada uma das restrições descritas em cima.
+
+\begin{verbatim}
+    (...)
+    % 1st restriction
+    validateNumOfOccurrencesForEachElem(Result, S, N),
+
+    % 2nd restriction
+    fetchResultRegions(Board, Result, N, S, ResultRegions),
+    validateNumOfOccurrencesForEachElem(ResultRegions, S, N),
+
+    % 3rd restriction
+    noAdjacentStars(Result, S, N),
+    (...)
+\end{verbatim}
 
 
 \section{Visualização da Solução}
@@ -126,14 +194,14 @@ ResultLength = N * S
 \centering
 \includegraphics[height=6.2cm]{res/testBoard4x4_1}
 \caption{caption.}
-\label{fig:example}
+\label{fig:testBoard4x4_1}
 \end{figure}
 
 \begin{figure}
 \centering
 \includegraphics[height=6.2cm]{res/testBoard4x4_1-solution}
 \caption{caption.}
-\label{fig:example}
+\label{fig:testBoard4x4_1-solution}
 \end{figure}
 
 
