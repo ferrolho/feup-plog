@@ -20,6 +20,9 @@ getBoard(N, Board):-
 %= @@ test boards =%
 %==================%
 % expected answer:2413
+% evaluation time:
+% - 1 star: 0.000s
+% - 2 star: impossible
 testBoard4x4_1([
 	[1, 2, 1, 1],
 	[1, 1, 1, 3],
@@ -27,6 +30,9 @@ testBoard4x4_1([
 	[1, 1, 1, 1]]).
 
 % expected answer: 14253
+% evaluation time:
+% - 1 star: 0.000s
+% - 2 star: impossible
 testBoard5x5_1([
 	[1, 1, 2, 2, 2],
 	[1, 2, 2, 3, 2],
@@ -34,6 +40,9 @@ testBoard5x5_1([
 	[4, 2, 4, 2, 5],
 	[4, 4, 4, 5, 5]]).
 
+% evaluation time:
+% - 1 star: 0.000s
+% - 2 star: impossible
 testBoard5x5_2([
 	[1, 1, 1, 2, 2],
 	[1, 3, 3, 3, 4],
@@ -42,6 +51,9 @@ testBoard5x5_2([
 	[1, 1, 1, 5, 5]]).
 
 % expected answer: 2468246813571357
+% evaluation time:
+% - 1 star: 0.000s
+% - 2 star: 0.140s
 testBoard8x8_1([
 	[1, 2, 3, 4, 5, 6, 7, 8],
 	[1, 2, 3, 4, 5, 6, 7, 8],
@@ -53,6 +65,9 @@ testBoard8x8_1([
 	[1, 2, 3, 4, 5, 6, 7, 8]]).
 
 % expected answer: 2468246813571357
+% evaluation time:
+% - 1 star: 0.000s
+% - 2 star: 0.120s
 testBoard8x8_2([
 	[1, 1, 1, 1, 1, 1, 1, 1],
 	[2, 2, 2, 2, 2, 2, 2, 2],
@@ -63,6 +78,9 @@ testBoard8x8_2([
 	[7, 7, 7, 7, 7, 7, 7, 7],
 	[8, 8, 8, 8, 8, 8, 8, 8]]).
 
+% evaluation time:
+% - 1 star:  0.000s
+% - 2 star: 59.840s
 testBoard10x10_1([
 	[1,  1,  1,  2,  2,  3,  3,  3,  3,  3],
 	[1,  4,  4,  4,  2,  5,  3,  5,  3,  6],
@@ -75,6 +93,9 @@ testBoard10x10_1([
 	[10, 10, 7,  7,  7,  10, 6,  8,  9,  6],
 	[10, 10, 10, 10, 10, 10, 6,  6,  6,  6]]).
 
+% evaluation time:
+% - 1 star: 0.000s
+% - 2 star: 0.640s
 testBoard10x10_2([
 	[1,  1,  1,  2,  2,  2,  2,  2,  2,  2],
 	[3,  3,  1,  1,  1,  1,  2,  2,  2,  2],

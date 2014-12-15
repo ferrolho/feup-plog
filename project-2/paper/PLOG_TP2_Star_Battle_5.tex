@@ -18,13 +18,7 @@
 \usepackage{amssymb}
 \setcounter{tocdepth}{3}
 \usepackage{graphicx}
-
 \usepackage{url}
-\urldef{\mailsa}\path|{alfred.hofmann, ursula.barth, ingrid.haas, frank.holzwarth,|
-\urldef{\mailsb}\path|anna.kramer, leonie.kunz, christine.reiss, nicole.sator,|
-\urldef{\mailsc}\path|erika.siebert-cole, peter.strasser, lncs}@springer.com|    
-\newcommand{\keywords}[1]{\par\addvspace\baselineskip
-\noindent\keywordname\enspace\ignorespaces#1}
 
 \begin{document}
 
@@ -190,27 +184,72 @@ De seguida é apresentada mais uma porção do predicado de resolução do puzzl
 
 \section{Visualização da Solução}
 
+Ao contrário do que se esperava, os predicados responsáveis pela visualização dos possíveis tabuleiros do puzzle em modo de texto, bem como a respectiva solução nesses mesmos tabuleiros, foi a parte mais morosa e trabalhosa deste projecto.
+
+Contudo, o grupo orgulha-se bastante do resultado obtido.
+
+\paragraph{}
+
 \begin{figure}
 \centering
-\includegraphics[height=6.2cm]{res/testBoard4x4_1}
-\caption{caption.}
+\includegraphics[height=8cm]{res/testBoard4x4_1}
+\caption{Representação de um tabuleiro, por resolver, em modo de texto, previamente apresentado noutra imagem.}
 \label{fig:testBoard4x4_1}
 \end{figure}
 
 \begin{figure}
 \centering
-\includegraphics[height=6.2cm]{res/testBoard4x4_1-solution}
-\caption{caption.}
+\includegraphics[height=8cm]{res/testBoard4x4_1-solution}
+\caption{Representação do tabuleiro da imagem anterior, desta vez preenchido com a solução.}
 \label{fig:testBoard4x4_1-solution}
 \end{figure}
+
+Os predicados responsáveis pelas representações acima demonstradas encontram-se no ficheiro \emph{printer.pl}.
+
+\paragraph{}
+
+Sucintamente, o que está a acontecer é o seguinte: o tabuleiro está a ser impresso \emph{linha a linha}, e para cada elemento de uma dada linha é verificado o valor da região da célula a \emph{este} e a \emph{sul}; consoante este valor, a célula a ser impressa terá uma \textbf{borda direita} preenchida ou ponteada, se a célula à sua direita pertencer a uma região diferente, ou não, respectivamente, e uma \textbf{borda inferior} preenchida ou ponteada, se a célula a sul pertencer a uma região diferente, ou não, respectivamente.
+
+Os casos especiais das células que se encontram nos limites e nos cantos do tabuleiro são processados devidamente.
 
 
 \section{Resultados}
 
+Os resultados obtidos não são muito conclusivos porque não foram suficientemente extensos e exaustivos.
+
+Contudo, podem tirar-se as seguintes conclusões:
+\begin{itemize}
+  \item Colocar uma estrela é extremamente rápido em qualquer um dos tabuleiros testados, sendo o tempo decorrido 0.00 segundos para todos os casos;
+  \item Para os tabuleiros onde é possível colocar duas estrelas, na maioria dos casos testados, o tempo necessário para o efeito é inferior a 1 segundo;
+  \item Existe um caso que se destacou pelo tempo que o programa demorou a encontrar uma solução, pelo que podemos concluir que houve muitos retrocessos até a solução correcta ter sido encontrada;
+  \item O tempo necessário para encontrar a solução de um puzzle aumenta, quer com o número de estrelas a ser colocado, quer com a dimensão do tabuleiro.
+\end{itemize}
+
+\begin{figure}
+\centering
+\includegraphics[height=4cm]{res/resultsTable}
+\caption{Tempo decorrido para cada tipo de tabuleiro. Células com hífen significam que não há solução para o respectivo número de estrelas, e dimensão do tabuleiro.}
+\label{fig:resultsTable}
+\end{figure}
+
+\begin{figure}
+\centering
+\includegraphics[height=7cm]{res/boardType-timeGraph}
+\caption{Gráfico da tabela anterior, ignorando a descrepância do primeiro tabuleiro 10x10.}
+\label{fig:boardType-timeGraph}
+\end{figure}
+
+\break
+
 \section{Conclusões}
 
-Escrever conclusões aqui
+Com a conclusão deste projecto, o grupo conclui que o uso de Prolog com restrições é útil para determinadas situações. O desenvolvimento de programas complexos é facilitado, e dá ao programador a liberdade de escolher o nível de verbosidade que ache mais correcto para os seus predicados.
 
+Por outro lado, uma simples tarefa como imprimir um tabuleiro na consola pode tornar-se facilmente um pesadelo à mínima distração. Se não se tiver cuidado, o tempo ganho ao programar tarefas difíceis que o Prolog descomplica, pode ser gasto e ultrapassado ao programar outras tarefas que o Prolog, talvez, complica.
+
+\paragraph{}
+
+Pudemos também concluir, mais uma vez, que Prolog é uma linguagem bastante eficaz, resolvendo problemas de alguma complexidade bastante rápido.
 
 \begin{thebibliography}{4}
 
@@ -223,6 +262,7 @@ Escrever conclusões aqui
 
 \end{thebibliography}
 
+\pagebreak
 
 \section*{Anexo}
 
