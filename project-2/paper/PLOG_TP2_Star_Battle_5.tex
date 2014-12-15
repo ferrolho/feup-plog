@@ -53,16 +53,67 @@ Este artigo complementa o segundo projecto da Unidade Curricular de Programaçã
 
 \section{Introdução}
 
-asdasdad
+O objectivo deste trabalho era implementar a resolução de um problema de decisão ou optimização em Prolog com restrições. Foi dada ao grupo a oportunidade de escolher um dos dois tipos de problema, bem como o puzzle/problema a implementar.
 
-asdads
+O nosso grupo decidiu implementar o puzzle Star Battle, que é um problema de decisão. O puzzle consiste num tabuleiro quadrado, constituído por diferentes regiões, onde o jogador tem que colocar estrelas.
+
+Este artigo descreve detalhadamente o puzzle Star Battle; a abordagem do grupo para implementar uma resolução capaz de resolver qualquer tabuleiro deste puzzle, bem como a análise detalhada da mesma; a explicação da forma perceptível usada para visualizar qualquer tabuleiro do puzzle e a respectiva solução; estatísticas de resolução de puzzles com diferentes complexidades; e finalmente, a conclusão do projecto realizado.
+
 
 \section{Descrição do Problema}
+
+O puzzle Star Battle consiste num tabuleiro \textbf{quadrado}, onde existe um dado número de regiões. O número de regiões existentes num dado tabuleiro é \textit{igual ao tamanho desse mesmo tabuleiro}, ou seja, igual ao número de células em cada linha e coluna. As regiões não têm uma forma específica, nem tamanho fixo. 
+
+\begin{figure}
+\centering
+\includegraphics[height=6.2cm]{res/starBattleExample}
+\caption{Exemplo de um tabuleiro de Star Battle com dimensões 10x10; e consequentemente, com 10 regiões delimitadas a negrito.}
+\label{fig:example}
+\end{figure}
+
+Juntamente com o tabuleiro é também fornecido um número, que representa o \textbf{número de estrelas} a colocar em cada \textit{linha}, \textit{coluna} e \textit{região} do tabuleiro. A dificuldade do puzzle é consequência do facto de as estrelas \textit{não poderem ser adjacentes umas às outras}, nem sequer diagonalmente.
+
+\begin{figure}
+\centering
+\includegraphics[height=6.2cm]{res/starBattleExampleSolution}
+\caption{Solução do tabuleiro apresentado na figura anterior, onde era necessário colocar 2 estrelas em cada linha, coluna e região, sem que nenhuma estrela esteja em contacto com qualquer outra estrela.}
+\label{fig:example}
+\end{figure}
 
 
 \section{Abordagem}
 
+Na implementação do puzzle em Prolog, o grupo representou o tabuleiro fornecido como uma \textbf{lista de listas}, onde cada elemento é um número indicador da região a que a célula pertence.
+
+Cada região é identificada por um número único, diferente de todos os outros indicadores das restantes regiões.
+
+\begin{figure}
+\centering
+\includegraphics[height=4cm]{res/boardRepresentationExample}
+\caption{Um tabuleiro do puzzle Star Battle e a sua respectiva representação na implementação em Prolog do grupo.}
+\label{fig:example}
+\end{figure}
+
+
 \subsection{Variáveis de Decisão}
+
+Com esta representação em mente, a solução pretendida pode tomar a forma de uma lista simples, com tamanho igual ao do tabuleiro vezes o número de estrelas a colocar em cada linha/coluna/região.
+
+Os primeiros X elementos da solução representam a coluna onde as X estrelas da primeira linha do tabuleiro têm que ser colocadas; os seguintes X elementos, representam a coluna onde as X estrelas da segunda linha têm que ser colocadas; e assim sucessivamente, até à última linha do tabuleiro.
+
+\begin{figure}
+\centering
+\includegraphics[height=4cm]{res/solutionRepresentationExample}
+\caption{A solução de um puzzle Star Battle e a sua respectiva representação na implementação em Prolog do grupo.}
+\label{fig:example}
+\end{figure}
+
+Sendo \textbf{N} o tamanho do tabuleiro, e \textbf{S} o número de estrelas a colocar em cada \emph{linha/coluna/região}, o tamanho da lista com a solução do tabuleiro é dado pela expressão:
+
+\begin{equation}
+ResultLength = N * S
+\end{equation}
+
 
 \subsection{Restrições}
 
@@ -771,151 +822,5 @@ testBoard10x10_2([
     
 \end{verbatim}
 \end{changemargin}
-
-%\begin{changemargin}{-3cm}{-4cm}
-%printResultBoard(Board, Result, NumStars), !.
-%\end{changemargin}
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-Springer provides you with a complete integrated \LaTeX{} document class
-(\texttt{llncs.cls}) for multi-author books such as those in the LNCS
-series. Papers not complying with the LNCS style will be reformatted.
-This can lead to an increase in the overall number of pages. We would
-therefore urge you not to squash your paper.
-
-Please always cancel any superfluous definitions that are
-not actually used in your text. If you do not, these may conflict with
-the definitions of the macro package, causing changes in the structure
-of the text and leading to numerous mistakes in the proofs.
-
-If you wonder what \LaTeX{} is and where it can be obtained, see the
-``\textit{LaTeX project site}'' (\url{http://www.latex-project.org})
-and especially the webpage ``\textit{How to get it}''
-(\url{http://www.latex-project.org/ftp.html}) respectively.
-
-When you use \LaTeX\ together with our document class file,
-\texttt{llncs.cls},
-your text is typeset automatically in Computer Modern Roman (CM) fonts.
-Please do
-\emph{not} change the preset fonts. If you have to use fonts other
-than the preset fonts, kindly submit these with your files.
-
-Please use the commands \verb+\label+ and \verb+\ref+ for
-cross-references and the commands \verb+\bibitem+ and \verb+\cite+ for
-references to the bibliography, to enable us to create hyperlinks at
-these places.
-
-For preparing your figures electronically and integrating them into
-your source file we recommend using the standard \LaTeX{} \verb+graphics+ or
-\verb+graphicx+ package. These provide the \verb+\includegraphics+ command.
-In general, please refrain from using the \verb+\special+ command.
-
-Remember to submit any further style files and
-fonts you have used together with your source files.
-
-\subsubsection{Headings.}
-
-Headings should be capitalized
-(i.e., nouns, verbs, and all other words
-except articles, prepositions, and conjunctions should be set with an
-initial capital) and should,
-with the exception of the title, be aligned to the left.
-Words joined by a hyphen are subject to a special rule. If the first
-word can stand alone, the second word should be capitalized.
-
-Here are some examples of headings: ``Criteria to Disprove
-Context-Freeness of Collage Language", ``On Correcting the Intrusion of
-Tracing Non-deterministic Programs by Software", ``A User-Friendly and
-Extendable Data Distribution System", ``Multi-flip Networks:
-Parallelizing GenSAT", ``Self-determinations of Man".
-
-\subsubsection{Lemmas, Propositions, and Theorems.}
-
-The numbers accorded to lemmas, propositions, and theorems, etc. should
-appear in consecutive order, starting with Lemma 1, and not, for
-example, with Lemma 11.
-
-\subsection{Figures}
-
-For \LaTeX\ users, we recommend using the \emph{graphics} or \emph{graphicx}
-package and the \verb+\includegraphics+ command.
-
-Please check that the lines in line drawings are not
-interrupted and are of a constant width. Grids and details within the
-figures must be clearly legible and may not be written one on top of
-the other. Line drawings should have a resolution of at least 800 dpi
-(preferably 1200 dpi). The lettering in figures should have a height of
-2~mm (10-point type). Figures should be numbered and should have a
-caption which should always be positioned \emph{under} the figures, in
-contrast to the caption belonging to a table, which should always appear
-\emph{above} the table; this is simply achieved as matter of sequence in
-your source.
-
-Please center the figures or your tabular material by using the \verb+\centering+
-declaration. Short captions are centered by default between the margins
-and typeset in 9-point type (Fig.~\ref{fig:example} shows an example).
-The distance between text and figure is preset to be about 8~mm, the
-distance between figure and caption about 6~mm.
-
-To ensure that the reproduction of your illustrations is of a reasonable
-quality, we advise against the use of shading. The contrast should be as
-pronounced as possible.
-
-If screenshots are necessary, please make sure that you are happy with
-the print quality before you send the files.
-\begin{figure}
-\centering
-%\includegraphics[height=6.2cm]{eijkel2}
-\caption{One kernel at $x_s$ (\emph{dotted kernel}) or two kernels at
-$x_i$ and $x_j$ (\textit{left and right}) lead to the same summed estimate
-at $x_s$. This shows a figure consisting of different types of
-lines. Elements of the figure described in the caption should be set in
-italics, in parentheses, as shown in this sample caption.}
-\label{fig:example}
-\end{figure}
-
-Please define figures (and tables) as floating objects. Please avoid
-using optional location parameters like ``\verb+[h]+" for ``here".
-
-\paragraph{Remark 1.}
-
-In the printed volumes, illustrations are generally black and white
-(halftones), and only in exceptional cases, and if the author is
-prepared to cover the extra cost for color reproduction, are colored
-pictures accepted. Colored pictures are welcome in the electronic
-version free of charge. If you send colored figures that are to be
-printed in black and white, please make sure that they really are
-legible in black and white. Some colors as well as the contrast of
-converted colors show up very poorly when printed in black and white.
-
-\subsection{Formulas}
-
-Displayed equations or formulas are centered and set on a separate
-line (with an extra line or halfline space above and below). Displayed
-expressions should be numbered for reference. The numbers should be
-consecutive within each section or within the contribution,
-with numbers enclosed in parentheses and set on the right margin --
-which is the default if you use the \emph{equation} environment, e.g.,
-\begin{equation}
-  \psi (u) = \int_{o}^{T} \left[\frac{1}{2}
-  \left(\Lambda_{o}^{-1} u,u\right) + N^{\ast} (-u)\right] dt \;  .
-\end{equation}
-
-Equations should be punctuated in the same way as ordinary
-text but with a small space before the end punctuation mark.
-
-\subsection{Footnotes}
-
-The superscript numeral used to refer to a footnote appears in the text
-either directly after the word to be discussed or -- in relation to a
-phrase or a sentence -- following the punctuation sign (comma,
-semicolon, or period). Footnotes should appear at the bottom of
-the
-normal text area, with a line of about 2~cm set
-immediately above them.\footnote{The footnote numeral is set flush left
-and the text follows with the usual word spacing.}
 
 \end{document}
